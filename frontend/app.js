@@ -316,7 +316,13 @@ function initializeApp() {
         await generateWorksheets();
         proceedToStep(7);
       } finally {
-        setGeneratingState("generate-worksheets", false, currentLanguage === "en" ? "Next: Create Worksheet" : "下一步：製作學習單");
+        setGeneratingState(
+          "generate-worksheets",
+          false,
+          currentLanguage === "en"
+            ? "Next: Create Worksheet"
+            : "下一步：製作學習單"
+        );
       }
     });
 
@@ -1031,7 +1037,13 @@ function setGeneratingState(buttonId, isGenerating, text) {
 async function generateWorksheets() {
   const worksheetContent = document.getElementById("worksheet-content");
 
-  // 總是先清除舊內容並顯示載入訊息
+  // 如果已有內容，直接顯示並返回（不調用 API）
+  if (courseData.worksheet) {
+    worksheetContent.innerHTML = marked.parse(courseData.worksheet);
+    return;
+  }
+
+  // 清除舊內容並顯示載入訊息
   worksheetContent.textContent = "⌛ 正在生成學習單...";
   worksheetContent.style.color = "#4a90e2";
   worksheetContent.style.fontWeight = "bold";
@@ -1040,20 +1052,6 @@ async function generateWorksheets() {
   worksheetContent.style.padding = "20px";
   worksheetContent.style.backgroundColor = "#e6f7ff";
   worksheetContent.style.borderRadius = "8px";
-
-  // 如果已有內容，直接顯示並返回
-  if (courseData.worksheet) {
-    worksheetContent.textContent = courseData.worksheet;
-    // 重置樣式
-    worksheetContent.style.color = "";
-    worksheetContent.style.fontWeight = "";
-    worksheetContent.style.fontSize = "";
-    worksheetContent.style.textAlign = "";
-    worksheetContent.style.padding = "";
-    worksheetContent.style.backgroundColor = "";
-    worksheetContent.style.borderRadius = "";
-    return;
-  }
 
   // 重置樣式的輔助函數
   const resetStyles = () => {
@@ -1097,6 +1095,8 @@ async function generateWorksheets() {
       throw new Error("生成學習單所需的基本資訊不完整。請完成所有前置步驟。");
     }
 
+    console.log("📤 發送學習單生成請求...", requestData);
+
     const response = await fetch(`${API_BASE_URL}/courses/generate-worksheet`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1104,6 +1104,7 @@ async function generateWorksheets() {
         ...courseData,
         ai_model: aiModel,
         ai_submodel: aiSubmodel,
+        language: currentLanguage,
       }),
     });
 
@@ -1112,9 +1113,10 @@ async function generateWorksheets() {
     }
 
     const data = await response.json();
+    console.log("📥 收到學習單 API 響應:", data);
 
     if (data.status === "success") {
-      worksheetContent.textContent = data.worksheet;
+      worksheetContent.innerHTML = marked.parse(data.worksheet);
       courseData.worksheet = data.worksheet;
       console.log(`📊 學習單內容長度: ${data.worksheet?.length || 0} 字元`);
       resetStyles();
