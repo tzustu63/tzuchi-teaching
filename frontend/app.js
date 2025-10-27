@@ -322,7 +322,9 @@ async function generateRationale() {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(
+        errorData.detail || `HTTP ${response.status}: ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -498,8 +500,9 @@ async function generateObjectives() {
     }
   } catch (error) {
     console.error("生成學習目標失敗:", error);
-    document.getElementById("objectives-content").textContent =
-      `❌ 生成失敗：${error.message}`;
+    document.getElementById(
+      "objectives-content"
+    ).textContent = `❌ 生成失敗：${error.message}`;
   }
 }
 
@@ -542,7 +545,7 @@ async function generateStrategies() {
     }
 
     const data = await response.json();
-    
+
     if (data.status === "success") {
       document.getElementById("strategies-content").textContent =
         data.strategies;
@@ -553,8 +556,9 @@ async function generateStrategies() {
     }
   } catch (error) {
     console.error("生成教學策略失敗:", error);
-    document.getElementById("strategies-content").textContent =
-      `❌ 生成失敗：${error.message}`;
+    document.getElementById(
+      "strategies-content"
+    ).textContent = `❌ 生成失敗：${error.message}`;
   }
 }
 
@@ -593,7 +597,7 @@ async function generateFlow() {
     }
 
     const data = await response.json();
-    
+
     if (data.status === "success") {
       document.getElementById("flow-content").textContent = data.flow;
       courseData.teaching_flow = data.flow;
@@ -603,8 +607,9 @@ async function generateFlow() {
     }
   } catch (error) {
     console.error("生成教學流程失敗:", error);
-    document.getElementById("flow-content").textContent =
-      `❌ 生成失敗：${error.message}`;
+    document.getElementById(
+      "flow-content"
+    ).textContent = `❌ 生成失敗：${error.message}`;
   }
 }
 
