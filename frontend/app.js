@@ -1851,7 +1851,7 @@ async function showHistoryPage() {
 // 載入歷史記錄列表
 async function loadHistoryList() {
   try {
-    const response = await fetch("/api/course-plans");
+    const response = await fetch(`${API_BASE_URL}/course-plans`);
     const data = await response.json();
     
     const historyList = document.getElementById("history-list");
@@ -1895,7 +1895,7 @@ async function loadHistoryList() {
 // 查看課程計劃詳情
 async function viewPlanDetail(planId) {
   try {
-    const response = await fetch(`/api/course-plans/${planId}`);
+    const response = await fetch(`${API_BASE_URL}/course-plans/${planId}`);
     const data = await response.json();
     
     const plan = data.course_plan;
@@ -1994,7 +1994,7 @@ async function saveCoursePlan() {
       gamma_url: localStorage.getItem("gammaUrl") || null
     };
     
-    const response = await fetch("/api/course-plans/save", {
+    const response = await fetch(`${API_BASE_URL}/course-plans/save`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -3,7 +3,9 @@
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
+from pathlib import Path
 import os
 
 from app.database import init_db
@@ -34,10 +36,10 @@ async def startup_event():
     """應用程式啟動時初始化資料庫"""
     init_db()
 
-@app.get("/")
-async def root():
-    """根目錄健康檢查"""
-    return {"message": "課程計劃生成器 API", "status": "running"}
+# 添加靜態文件服務（必須在其他路由之後）
+frontend_path = Path(__file__).parent.parent / "frontend"
+if frontend_path.exists():
+    app.mount("/", StaticFiles(directory=str(frontend_path), html=True), name="static")
 
 
 @app.get("/health")
