@@ -40,7 +40,18 @@ const translations = {
     edit: "編輯",
     regenerate: "重新生成",
     download: "下載學習單",
-    generateMaterials: "生成教學材料"
+    generateMaterials: "生成教學材料",
+    courseTitle: "課程標題",
+    grade: "年級",
+    courseDuration: "課程時長（分鐘）",
+    studentCount: "學生人數",
+    classroomEquipment: "教室設備",
+    lessonPlanContent: "教案內容（選填）",
+    pleaseSelect: "請選擇",
+    gradeOptions: "一年級,二年級,三年級,四年級,五年級,六年級",
+    equipmentPlaceholder: "例如: 投影機、電腦、白板",
+    supportedFormats: "支援格式: .docx, .pdf, .txt（最大 10MB）",
+    nextRationale: "下一步：生成教學理念"
   },
   en: {
     title: "Lesson Plan Generator",
@@ -71,7 +82,18 @@ const translations = {
     edit: "Edit",
     regenerate: "Regenerate",
     download: "Download Worksheet",
-    generateMaterials: "Generate Teaching Materials"
+    generateMaterials: "Generate Teaching Materials",
+    courseTitle: "Course Title",
+    grade: "Grade",
+    courseDuration: "Course Duration (minutes)",
+    studentCount: "Number of Students",
+    classroomEquipment: "Classroom Equipment",
+    lessonPlanContent: "Lesson Plan Content (Optional)",
+    pleaseSelect: "Please select",
+    gradeOptions: "Grade 1,Grade 2,Grade 3,Grade 4,Grade 5,Grade 6",
+    equipmentPlaceholder: "e.g., Projector, Computer, Whiteboard",
+    supportedFormats: "Supported formats: .docx, .pdf, .txt (max 10MB)",
+    nextRationale: "Next Step: Generate Teaching Philosophy"
   },
 };
 
@@ -1541,6 +1563,87 @@ function applyLanguage(lang) {
   const featuresTitle = document.querySelector("#api-key-section h3");
   if (featuresTitle) {
     featuresTitle.textContent = `✨ ${t.features}`;
+  }
+  
+  // 更新第一步驟表單
+  updateStep1Form(lang);
+}
+
+function updateStep1Form(lang) {
+  const t = translations[lang];
+  
+  // 更新標籤
+  const labels = document.querySelectorAll('#step1 label');
+  if (labels[0]) labels[0].textContent = `${t.courseTitle} *`;
+  if (labels[1]) labels[1].textContent = `${t.grade} *`;
+  if (labels[2]) labels[2].textContent = `${t.courseDuration} *`;
+  if (labels[3]) labels[3].textContent = `${t.studentCount} *`;
+  if (labels[4]) labels[4].textContent = t.classroomEquipment;
+  if (labels[5]) labels[5].textContent = t.lessonPlanContent;
+  
+  // 更新選擇框
+  const gradeSelect = document.getElementById("grade");
+  if (gradeSelect && gradeSelect.options[0]) {
+    gradeSelect.options[0].textContent = t.pleaseSelect;
+    
+    // 更新年級選項
+    if (lang === "en") {
+      const gradeOptions = t.gradeOptions.split(',');
+      for (let i = 1; i < gradeSelect.options.length && i <= gradeOptions.length; i++) {
+        gradeSelect.options[i].textContent = gradeOptions[i-1];
+      }
+    } else {
+      const gradeOptions = t.gradeOptions.split(',');
+      for (let i = 1; i < gradeSelect.options.length && i <= gradeOptions.length; i++) {
+        gradeSelect.options[i].textContent = gradeOptions[i-1];
+      }
+    }
+  }
+  
+  // 更新佔位文字
+  const equipmentInput = document.getElementById("equipment");
+  if (equipmentInput) {
+    equipmentInput.placeholder = t.equipmentPlaceholder;
+  }
+  
+  // 更新檔案說明
+  const fileInstructions = document.querySelector('#upload-file + small');
+  if (fileInstructions) {
+    fileInstructions.textContent = t.supportedFormats;
+  }
+  
+  // 更新提交按鈕
+  const submitBtn = document.querySelector('#basic-info-form button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.textContent = t.nextRationale;
+  }
+  
+  // 更新歡迎訊息
+  const welcomeText = document.querySelector('#api-key-section p');
+  if (welcomeText) {
+    if (lang === "en") {
+      welcomeText.textContent = "Please select an AI model on the left sidebar and then start creating your course plan!";
+    } else {
+      welcomeText.textContent = "請在左側選擇 AI 模型，然後開始創建您的課程計劃！";
+    }
+  }
+  
+  // 更新功能特色
+  const featuresList = document.querySelectorAll('#api-key-section ul li');
+  if (featuresList && featuresList.length > 0) {
+    if (lang === "en") {
+      featuresList[0].textContent = "🚀 Using the latest AI models (GPT-4o / Claude Sonnet 4.5)";
+      featuresList[1].textContent = "📝 Generate complete lesson plans in 7 steps";
+      featuresList[2].textContent = "🎨 Beautiful sidebar navigation";
+      featuresList[3].textContent = "🔧 Customizable Prompt templates";
+      featuresList[4].textContent = "💾 Auto-save progress";
+    } else {
+      featuresList[0].textContent = "🚀 使用最新的 AI 模型（GPT-4o / Claude Sonnet 4.5）";
+      featuresList[1].textContent = "📝 七步驟生成完整課程計劃";
+      featuresList[2].textContent = "🎨 美觀的側邊欄導航";
+      featuresList[3].textContent = "🔧 可自訂 Prompt 模板";
+      featuresList[4].textContent = "💾 自動儲存進度";
+    }
   }
 }
 
