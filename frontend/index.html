@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- 語言切換按鈕 -->
+    <div id="language-switcher" style="position: fixed; top: 20px; right: 20px; z-index: 1001; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); cursor: pointer;" onclick="toggleLanguage()">
+      <span id="current-lang-text">中文</span>
+      <span id="switch-to-text"> / English</span>
+    </div>
+    
     <!-- 側邊欄 -->
     <aside class="sidebar">
       <div class="sidebar-header">
@@ -137,6 +143,12 @@
 
     <!-- 主內容區 -->
     <div class="main-content">
+      <!-- 語言切換按鈕 -->
+      <div id="language-switcher" style="position: fixed; top: 20px; right: 20px; z-index: 1001; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); cursor: pointer;" onclick="toggleLanguage()">
+        <span id="current-lang-text">中文</span>
+        <span id="switch-to-text"> / English</span>
+      </div>
+      
       <div class="container">
         <!-- 歡迎資訊 -->
         <section id="api-key-section" class="card settings-card">

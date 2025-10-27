@@ -7,10 +7,48 @@ const API_BASE_URL = "http://localhost:8000";
 // 初始化
 let currentStep = 1;
 let courseData = {};
+let currentLanguage = localStorage.getItem("language") || "zh";
+
+// 翻譯內容
+const translations = {
+  zh: {
+    title: "課程計劃生成器",
+    subtitle: "AI 驅動的完整課程計劃工具",
+    step1: "基本資訊",
+    step2: "教學理念",
+    step3: "學習目標",
+    step4: "教學策略",
+    step5: "教學流程",
+    step6: "教學材料",
+    step7: "製作學習單",
+    welcome: "歡迎使用課程計劃生成器",
+    features: "功能特色",
+    start: "開始使用",
+    currentLang: "中文",
+    switchTo: "English"
+  },
+  en: {
+    title: "Lesson Plan Generator",
+    subtitle: "AI-powered complete course planning tool",
+    step1: "Basic Info",
+    step2: "Teaching Philosophy",
+    step3: "Learning Objectives",
+    step4: "Teaching Strategies",
+    step5: "Teaching Flow",
+    step6: "Teaching Materials",
+    step7: "Create Worksheets",
+    welcome: "Welcome to Lesson Plan Generator",
+    features: "Features",
+    start: "Start Using",
+    currentLang: "English",
+    switchTo: "中文"
+  }
+};
 
 // DOM 載入後初始化
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
+  applyLanguage(currentLanguage);
 });
 
 function initializeApp() {
@@ -1365,6 +1403,60 @@ async function savePrompt() {
     console.error("儲存 Prompt 失敗:", error);
     document.getElementById("prompt-status").innerHTML =
       '<span class="status-error">❌ 儲存失敗，請重試</span>';
+  }
+}
+
+// 語言切換功能
+function toggleLanguage() {
+  currentLanguage = currentLanguage === "zh" ? "en" : "zh";
+  localStorage.setItem("language", currentLanguage);
+  applyLanguage(currentLanguage);
+}
+
+function applyLanguage(lang) {
+  const t = translations[lang];
+  
+  // 更新語言切換按鈕
+  document.getElementById("current-lang-text").textContent = t.currentLang;
+  document.getElementById("switch-to-text").textContent = " / " + t.switchTo;
+  
+  // 更新標題
+  const titleElement = document.querySelector(".sidebar-header h1");
+  if (titleElement) {
+    titleElement.textContent = `📚 ${t.title}`;
+  }
+  
+  // 更新副標題
+  const subtitleElement = document.querySelector(".subtitle");
+  if (subtitleElement) {
+    subtitleElement.textContent = t.subtitle;
+  }
+  
+  // 更新步驟標籤
+  document.querySelector('#nav-step-1 .step-label').textContent = t.step1;
+  document.querySelector('#nav-step-2 .step-label').textContent = t.step2;
+  document.querySelector('#nav-step-3 .step-label').textContent = t.step3;
+  document.querySelector('#nav-step-4 .step-label').textContent = t.step4;
+  document.querySelector('#nav-step-5 .step-label').textContent = t.step5;
+  document.querySelector('#nav-step-6 .step-label').textContent = t.step6;
+  document.querySelector('#nav-step-7 .step-label').textContent = t.step7;
+  
+  // 更新歡迎標題
+  const welcomeTitle = document.querySelector('#api-key-section h2');
+  if (welcomeTitle) {
+    welcomeTitle.textContent = `👋 ${t.welcome}`;
+  }
+  
+  // 更新功能特色
+  const featuresTitle = document.querySelector('#api-key-section h3');
+  if (featuresTitle) {
+    featuresTitle.textContent = `✨ ${t.features}`;
+  }
+  
+  // 更新開始按鈕
+  const startBtn = document.getElementById("start-using");
+  if (startBtn) {
+    startBtn.textContent = `✅ ${t.start}`;
   }
 }
 
