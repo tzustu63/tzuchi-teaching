@@ -642,14 +642,17 @@ async function regenerateRationale() {
 
 async function generateObjectives() {
   if (courseData.objectives) {
-    // 如果已經生成過，直接顯示
+    // 如果已經生成過，直接顯示並模擬短暫延遲以顯示「生成中」狀態
     document.getElementById("objectives-content").textContent =
       courseData.objectives;
+    console.log("✅ 學習目標已存在，等待500ms以便顯示生成中狀態...");
+    await new Promise(resolve => setTimeout(resolve, 500));
     return;
   }
 
   try {
     // 顯示載入狀態
+    console.log("📤 開始生成學習目標...");
     document.getElementById("objectives-content").textContent =
       "⌛ 正在生成學習目標...";
 
@@ -715,10 +718,13 @@ async function generateStrategies() {
   if (courseData.strategies) {
     document.getElementById("strategies-content").textContent =
       courseData.strategies;
+    console.log("✅ 教學策略已存在，等待500ms以便顯示生成中狀態...");
+    await new Promise(resolve => setTimeout(resolve, 500));
     return;
   }
 
   try {
+    console.log("📤 開始生成教學策略...");
     document.getElementById("strategies-content").textContent =
       "⌛ 正在生成教學策略...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
@@ -771,10 +777,13 @@ async function generateFlow() {
   if (courseData.teaching_flow) {
     document.getElementById("flow-content").textContent =
       courseData.teaching_flow;
+    console.log("✅ 教學流程已存在，等待500ms以便顯示生成中狀態...");
+    await new Promise(resolve => setTimeout(resolve, 500));
     return;
   }
 
   try {
+    console.log("📤 開始生成教學流程...");
     document.getElementById("flow-content").textContent =
       "⌛ 正在生成教學流程...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
@@ -1019,18 +1028,25 @@ async function downloadAll() {
 // 設定按鈕生成中狀態
 function setGeneratingState(buttonId, isGenerating, text) {
   const button = document.getElementById(buttonId);
-  if (!button) return;
+  if (!button) {
+    console.error(`❌ 找不到按鈕: ${buttonId}`);
+    return;
+  }
+
+  console.log(`🔄 setGeneratingState(${buttonId}, ${isGenerating}, "${text}")`);
 
   if (isGenerating) {
     button.disabled = true;
     button.textContent = text || "生成中...";
     button.style.opacity = "0.6";
     button.style.cursor = "not-allowed";
+    console.log(`✅ 按鈕 ${buttonId} 已設為生成中狀態`);
   } else {
     button.disabled = false;
     button.textContent = text;
     button.style.opacity = "1";
     button.style.cursor = "pointer";
+    console.log(`✅ 按鈕 ${buttonId} 已恢復正常狀態`);
   }
 }
 
