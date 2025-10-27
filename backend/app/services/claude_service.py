@@ -59,11 +59,21 @@ class ClaudeService:
             
             # 提取生成的內容
             if response.content:
+                print(f"🔍 Claude API 響應結構: {type(response.content)}")
+                print(f"🔍 響應內容類型: {type(response.content[0]) if response.content else 'None'}")
+                
                 # response.content 是一個列表，包含 ContentBlock 對象
                 text_content = ""
                 for block in response.content:
+                    print(f"🔍 處理內容區塊: {type(block)}")
+                    # 檢查 block 的屬性
                     if hasattr(block, 'text'):
                         text_content += block.text
+                    elif hasattr(block, 'content') and hasattr(block.content[0], 'text'):
+                        # 處理嵌套結構
+                        text_content += block.content[0].text
+                    else:
+                        print(f"⚠️ 無法提取文本，block 屬性: {dir(block)}")
                 
                 result = text_content.strip()
                 
