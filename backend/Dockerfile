@@ -13,8 +13,9 @@ COPY requirements.txt .
 # 安裝 Python 依賴
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 複製後端代碼
-COPY . .
+# 複製必要的後端代碼
+COPY main.py .
+COPY app ./app/
 
 # 暴露端口
 EXPOSE 8000
