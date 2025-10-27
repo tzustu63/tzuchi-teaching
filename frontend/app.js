@@ -48,7 +48,7 @@ const translations = {
     classroomEquipment: "教室設備",
     lessonPlanContent: "教案內容（選填）",
     pleaseSelect: "請選擇",
-    gradeOptions: "一年級,二年級,三年級,四年級,五年級,六年級",
+    gradeOptions: "小班,中班,大班,一年級,二年級,三年級,四年級,五年級,六年級,七年級,八年級,九年級,高一,高二,高三",
     equipmentPlaceholder: "例如: 投影機、電腦、白板",
     supportedFormats: "支援格式: .docx, .pdf, .txt（最大 10MB）",
     nextRationale: "下一步：生成教學理念",
@@ -98,7 +98,7 @@ const translations = {
     classroomEquipment: "Classroom Equipment",
     lessonPlanContent: "Lesson Plan Content (Optional)",
     pleaseSelect: "Please select",
-    gradeOptions: "Grade 1,Grade 2,Grade 3,Grade 4,Grade 5,Grade 6",
+    gradeOptions: "K1 (Kindergarten),K2 (Kindergarten),K3 (Kindergarten),Grade 1,Grade 2,Grade 3,Grade 4,Grade 5,Grade 6,Grade 7,Grade 8,Grade 9,Grade 10,Grade 11,Grade 12",
     equipmentPlaceholder: "e.g., Projector, Computer, Whiteboard",
     supportedFormats: "Supported formats: .docx, .pdf, .txt (max 10MB)",
     nextRationale: "Next Step: Generate Teaching Philosophy",
@@ -646,7 +646,7 @@ async function generateObjectives() {
     document.getElementById("objectives-content").textContent =
       courseData.objectives;
     console.log("✅ 學習目標已存在，等待500ms以便顯示生成中狀態...");
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return;
   }
 
@@ -719,7 +719,7 @@ async function generateStrategies() {
     document.getElementById("strategies-content").textContent =
       courseData.strategies;
     console.log("✅ 教學策略已存在，等待500ms以便顯示生成中狀態...");
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return;
   }
 
@@ -778,7 +778,7 @@ async function generateFlow() {
     document.getElementById("flow-content").textContent =
       courseData.teaching_flow;
     console.log("✅ 教學流程已存在，等待500ms以便顯示生成中狀態...");
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return;
   }
 
@@ -1795,27 +1795,36 @@ function updateStep1Form(lang) {
 
   // 更新選擇框
   const gradeSelect = document.getElementById("grade");
-  if (gradeSelect && gradeSelect.options[0]) {
-    gradeSelect.options[0].textContent = t.pleaseSelect;
+  if (gradeSelect) {
+    // 更新「請選擇」文字
+    if (gradeSelect.options[0]) {
+      gradeSelect.options[0].textContent = t.pleaseSelect;
+    }
 
-    // 更新年級選項
-    if (lang === "en") {
-      const gradeOptions = t.gradeOptions.split(",");
-      for (
-        let i = 1;
-        i < gradeSelect.options.length && i <= gradeOptions.length;
-        i++
-      ) {
-        gradeSelect.options[i].textContent = gradeOptions[i - 1];
+    // 更新 optgroup 標籤
+    const optgroups = gradeSelect.querySelectorAll("optgroup");
+    if (optgroups.length > 0) {
+      if (lang === "en") {
+        optgroups[0].label = "Kindergarten";
+        optgroups[1].label = "Elementary School";
+        optgroups[2].label = "Junior High School";
+        optgroups[3].label = "Senior High School";
+      } else {
+        optgroups[0].label = "幼兒園";
+        optgroups[1].label = "國小";
+        optgroups[2].label = "國中";
+        optgroups[3].label = "高中";
       }
-    } else {
-      const gradeOptions = t.gradeOptions.split(",");
-      for (
-        let i = 1;
-        i < gradeSelect.options.length && i <= gradeOptions.length;
-        i++
-      ) {
-        gradeSelect.options[i].textContent = gradeOptions[i - 1];
+    }
+
+    // 更新選項文字（跳過第一個「請選擇」選項）
+    const gradeOptions = t.gradeOptions.split(",");
+    let optionIndex = 0;
+    
+    for (let i = 1; i < gradeSelect.options.length; i++) {
+      if (gradeSelect.options[i].value && optionIndex < gradeOptions.length) {
+        gradeSelect.options[i].textContent = gradeOptions[optionIndex];
+        optionIndex++;
       }
     }
   }
