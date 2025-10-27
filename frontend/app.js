@@ -886,6 +886,11 @@ async function checkGammaStatus(generationId) {
             "success"
           );
 
+          // 儲存 Gamma URL 到 localStorage
+          if (data.gamma_url) {
+            localStorage.setItem("gammaUrl", data.gamma_url);
+          }
+
           // 顯示結果並確保按鈕可見
           showMaterialResult(data.gamma_url);
 
