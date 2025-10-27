@@ -842,7 +842,7 @@ async function downloadAll() {
 
 async function generateWorksheets() {
   const worksheetContent = document.getElementById("worksheet-content");
-  
+
   // 總是先清除舊內容並顯示載入訊息
   worksheetContent.textContent = "⌛ 正在生成學習單...";
   worksheetContent.style.color = "#4a90e2";
@@ -883,13 +883,14 @@ async function generateWorksheets() {
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
       (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
-    
+
     // 準備請求資料
     const requestData = {
       title: courseData.title || courseData.basic_info?.title,
       grade: courseData.grade || courseData.basic_info?.grade,
       duration: courseData.duration || courseData.basic_info?.duration,
-      student_count: courseData.student_count || courseData.basic_info?.student_count,
+      student_count:
+        courseData.student_count || courseData.basic_info?.student_count,
       rationale: courseData.rationale,
       objectives: courseData.objectives,
       teaching_flow: courseData.teaching_flow,
@@ -898,7 +899,12 @@ async function generateWorksheets() {
     };
 
     // 前端驗證：檢查必要資料
-    if (!requestData.title || !requestData.rationale || !requestData.objectives || !requestData.teaching_flow) {
+    if (
+      !requestData.title ||
+      !requestData.rationale ||
+      !requestData.objectives ||
+      !requestData.teaching_flow
+    ) {
       throw new Error("生成學習單所需的基本資訊不完整。請完成所有前置步驟。");
     }
 
@@ -976,31 +982,55 @@ async function downloadWorksheet() {
 }
 
 function convertWorksheetToHTML(content) {
-  // 將 Markdown 格式轉換為 HTML
-  let html = content
-    // 先轉換段落（將空行轉為 </p><p>）
-    .replace(/\n\n/g, "</p><p>")
-    // 標題
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
-    // 加粗
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    // 斜體
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    // 列表
-    .replace(
-      /^(\d+)\. (.+)$/gm,
-      '<p style="margin-left: 20px; margin-bottom: 8px;">$1. $2</p>'
-    )
-    .replace(
-      /^- (.+)$/gm,
-      '<p style="margin-left: 20px; margin-bottom: 8px;">• $1</p>'
-    );
-
-  // 包裝在 p 標籤中
-  html = "<p>" + html + "</p>";
+  // 按大標題分割內容，每個大單元一頁
+  const sections = content.split(/(?=^[一-九]、|^[一二三四五六七八九十]+、|^一、|^二、|^三、|^四、|^五、|^六、)/m);
+  
+  let pagesHTML = "";
+  
+  sections.forEach((section, index) => {
+    if (!section.trim()) return;
+    
+    // 轉換每個段落
+    let html = section
+      // 大標題
+      .replace(/^([一-九]、.+)$/gm, "<h1>$1</h1>")
+      .replace(/^([一二三四五六七八九十]+、.+)$/gm, "<h1>$1</h1>")
+      // 小標題
+      .replace(/^（(.+?)）$/gm, "<h4 style='color: #666; font-weight: normal;'>（$1）</h4>")
+      // 加粗文字
+      .replace(/\*\*(.+?)\*\*/g, "<strong style='color: #2c3e50;'>$1</strong>")
+      // 列表項目
+      .replace(/^(\d+)[.．] (.+)$/gm, '<p style="margin-left: 25px; margin-bottom: 6px; line-height: 1.8;">$1. $2</p>')
+      .replace(/^[-－] (.+)$/gm, '<p style="margin-left: 25px; margin-bottom: 6px; line-height: 1.8;">• $1</p>')
+      // 冒號後面特殊標註
+      .replace(/：(.+)/g, "：<span style='color: #4a90e2; font-weight: bold;'>$1</span>");
+    
+    // 普通段落
+    const lines = html.split('\n');
+    let processedLines = [];
+    
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return;
+      
+      // 如果不是 HTML 標籤，視為普通段落
+      if (!trimmedLine.startsWith('<') && trimmedLine.length > 0) {
+        processedLines.push(`<p style="margin: 8px 0; line-height: 1.8; text-align: justify;">${trimmedLine}</p>`);
+      } else {
+        processedLines.push(line);
+      }
+    });
+    
+    html = processedLines.join('\n');
+    
+    // 每頁包裝
+    pagesHTML += `
+      <div class="page-break"></div>
+      <div class="page-content">
+        ${html}
+      </div>
+    `;
+  });
 
   // 創建完整的 HTML 結構
   return `<!DOCTYPE html>
@@ -1013,91 +1043,109 @@ function convertWorksheetToHTML(content) {
     @media print {
       @page {
         size: A4;
-        margin: 1.5cm;
+        margin: 2cm 1.5cm;
       }
-      .page {
+      .page-break {
+        page-break-before: always;
         page-break-after: always;
         page-break-inside: avoid;
+      }
+      .page-content {
+        page-break-after: always;
       }
       .no-print {
         display: none;
       }
     }
+    
     body {
       font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif;
-      line-height: 1.6;
+      line-height: 1.8;
       color: #333;
-      max-width: 21cm;
-      margin: 0 auto;
-      padding: 20px;
       background: white;
+      padding: 0;
+      margin: 0;
     }
+    
+    .no-print {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+    }
+    
+    .btn-print {
+      background: #52AA5E;
+      color: white;
+      border: 2px solid #4285F4;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .btn-print:hover {
+      background: #449554;
+    }
+    
+    .page-break {
+      margin: 0;
+      padding: 0;
+    }
+    
+    .page-content {
+      min-height: 24.5cm;
+      max-height: 24.5cm;
+      padding: 30px 25px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    
     h1 {
-      font-size: 24px;
+      font-size: 22px;
       color: #4a90e2;
-      border-bottom: 3px solid #4a90e2;
-      padding-bottom: 10px;
-      margin-top: 30px;
-      margin-bottom: 20px;
+      border-left: 5px solid #4a90e2;
+      padding-left: 15px;
+      margin: 15px 0;
+      font-weight: bold;
     }
+    
     h2 {
-      font-size: 20px;
-      color: #666;
-      border-bottom: 2px solid #ddd;
-      padding-bottom: 8px;
-      margin-top: 25px;
-      margin-bottom: 15px;
-    }
-    h3 {
       font-size: 18px;
-      color: #888;
-      margin-top: 20px;
-      margin-bottom: 12px;
+      color: #666;
+      margin: 12px 0 8px 0;
+      font-weight: bold;
     }
+    
+    h3 {
+      font-size: 16px;
+      color: #888;
+      margin: 10px 0 6px 0;
+      font-weight: 600;
+    }
+    
+    h4 {
+      font-size: 14px;
+      color: #999;
+      margin: 8px 0 4px 0;
+    }
+    
     p {
-      margin: 10px 0;
+      margin: 6px 0;
+      line-height: 1.8;
       text-align: justify;
     }
+    
     strong {
       color: #2c3e50;
       font-weight: bold;
     }
-    .page {
-      min-height: 29.7cm;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    .header {
-      text-align: center;
-      border-bottom: 2px solid #4a90e2;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
-    }
-    .header h1 {
-      margin: 0;
-      border: none;
-      padding: 0;
-    }
-    .btn-print {
-      background: #4a90e2;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin: 20px 0;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .btn-print:hover {
-      background: #357abd;
-    }
-    @media print {
-      .btn-print {
-        display: none;
-      }
+    
+    @page {
+      size: A4;
+      margin: 2cm 1.5cm;
     }
   </style>
 </head>
@@ -1106,15 +1154,7 @@ function convertWorksheetToHTML(content) {
     <button class="btn-print" onclick="window.print()">🖨️ 列印學習單</button>
   </div>
   
-  <div class="page">
-    <div class="header">
-      <h1>${courseData.title || "學習單"}</h1>
-      <p>年級：${
-        courseData.grade || "未指定"
-      } | 日期：${new Date().toLocaleDateString("zh-TW")}</p>
-    </div>
-    ${html}
-  </div>
+  ${pagesHTML}
 </body>
 </html>`;
 }
