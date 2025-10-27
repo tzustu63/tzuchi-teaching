@@ -306,7 +306,9 @@ async function generateRationale() {
     console.log("📤 發送給後端的完整數據:", requestData);
 
     // 加入子模型選擇（如果沒有選擇則使用預設）
-    const aiSubmodel = localStorage.getItem("ai_submodel") || (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+    const aiSubmodel =
+      localStorage.getItem("ai_submodel") ||
+      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
     requestData.ai_submodel = aiSubmodel;
 
     // 呼叫後端 API 生成教學理念
@@ -317,6 +319,11 @@ async function generateRationale() {
       },
       body: JSON.stringify(requestData),
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+    }
 
     const data = await response.json();
 
@@ -452,7 +459,9 @@ async function generateObjectives() {
     console.log("生成學習目標，使用模型:", aiModel);
 
     // 呼叫後端 API 生成學習目標
-    const aiSubmodel = localStorage.getItem("ai_submodel") || (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+    const aiSubmodel =
+      localStorage.getItem("ai_submodel") ||
+      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-objectives`,
       {
@@ -467,6 +476,10 @@ async function generateObjectives() {
         }),
       }
     );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
 
     const data = await response.json();
 
@@ -486,7 +499,7 @@ async function generateObjectives() {
   } catch (error) {
     console.error("生成學習目標失敗:", error);
     document.getElementById("objectives-content").textContent =
-      "❌ 生成失敗，請稍後重試";
+      `❌ 生成失敗：${error.message}`;
   }
 }
 
@@ -508,7 +521,9 @@ async function generateStrategies() {
       "⌛ 正在生成教學策略...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
 
-    const aiSubmodel = localStorage.getItem("ai_submodel") || (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+    const aiSubmodel =
+      localStorage.getItem("ai_submodel") ||
+      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-strategies`,
       {
@@ -522,17 +537,24 @@ async function generateStrategies() {
       }
     );
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const data = await response.json();
+    
     if (data.status === "success") {
       document.getElementById("strategies-content").textContent =
         data.strategies;
       courseData.strategies = data.strategies;
       console.log(`📊 教學策略內容長度: ${data.strategies?.length || 0} 字元`);
+    } else {
+      throw new Error(data.detail || "生成失敗");
     }
   } catch (error) {
     console.error("生成教學策略失敗:", error);
     document.getElementById("strategies-content").textContent =
-      "❌ 生成失敗，請稍後重試";
+      `❌ 生成失敗：${error.message}`;
   }
 }
 
@@ -553,7 +575,9 @@ async function generateFlow() {
       "⌛ 正在生成教學流程...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
 
-    const aiSubmodel = localStorage.getItem("ai_submodel") || (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+    const aiSubmodel =
+      localStorage.getItem("ai_submodel") ||
+      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
     const response = await fetch(`${API_BASE_URL}/courses/generate-flow`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -564,16 +588,23 @@ async function generateFlow() {
       }),
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const data = await response.json();
+    
     if (data.status === "success") {
       document.getElementById("flow-content").textContent = data.flow;
       courseData.teaching_flow = data.flow;
       console.log(`📊 教學流程內容長度: ${data.flow?.length || 0} 字元`);
+    } else {
+      throw new Error(data.detail || "生成失敗");
     }
   } catch (error) {
     console.error("生成教學流程失敗:", error);
     document.getElementById("flow-content").textContent =
-      "❌ 生成失敗，請稍後重試";
+      `❌ 生成失敗：${error.message}`;
   }
 }
 
