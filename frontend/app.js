@@ -58,6 +58,8 @@ const translations = {
     gammaSettings: "Gamma 設定",
     closeSettings: "關閉設定",
     downloadAll: "下載所有材料",
+    chooseFile: "選擇檔案",
+    noFileChosen: "未選擇任何檔案",
   },
   en: {
     title: "Lesson Plan Generator",
@@ -106,6 +108,8 @@ const translations = {
     gammaSettings: "Gamma Settings",
     closeSettings: "Close Settings",
     downloadAll: "Download All Materials",
+    chooseFile: "Choose File",
+    noFileChosen: "No file chosen",
   },
 };
 
@@ -1588,6 +1592,82 @@ function applyLanguage(lang) {
 
   // 更新第一步驟表單
   updateStep1Form(lang);
+  
+  // 更新檔案上傳按鈕
+  updateFileUploadLabel(lang);
+}
+
+function updateFileUploadLabel(lang) {
+  const t = translations[lang];
+  const fileInput = document.getElementById("upload-file");
+  
+  if (!fileInput) return;
+  
+  // 瀏覽器的原生檔案選擇按鈕文字無法直接翻譯
+  // 但我們可以通過 CSS 隱藏原生按鈕，使用自訂樣式
+  // 這裡需要實現一個自訂的檔案上傳按鈕
+  
+  // 創建或獲取自訂按鈕容器
+  let customUploadContainer = fileInput.parentElement.querySelector('.custom-file-upload');
+  
+  if (!customUploadContainer) {
+    // 如果還不存在，創建自訂容器
+    customUploadContainer = document.createElement('div');
+    customUploadContainer.className = 'custom-file-upload';
+    customUploadContainer.style.cssText = 'position: relative; display: inline-block;';
+    
+    // 創建自訂按鈕
+    const customButton = document.createElement('button');
+    customButton.type = 'button';
+    customButton.className = 'custom-file-button';
+    customButton.textContent = t.chooseFile;
+    
+    // 創建顯示檔案名的元素
+    const fileNameDisplay = document.createElement('span');
+    fileNameDisplay.className = 'file-name-display';
+    fileNameDisplay.textContent = t.noFileChosen;
+    
+    customUploadContainer.appendChild(customButton);
+    customUploadContainer.appendChild(fileNameDisplay);
+    
+    // 隱藏原生檔案輸入框
+    fileInput.style.position = 'absolute';
+    fileInput.style.opacity = '0';
+    fileInput.style.width = '100%';
+    fileInput.style.height = '100%';
+    fileInput.style.cursor = 'pointer';
+    
+    // 將自訂容器插入到原生輸入框之後
+    fileInput.parentElement.insertBefore(customUploadContainer, fileInput);
+    
+    // 綁定點擊事件
+    customButton.addEventListener('click', function() {
+      fileInput.click();
+    });
+    
+    // 監聽檔案選擇變化
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        fileNameDisplay.textContent = file.name;
+      } else {
+        fileNameDisplay.textContent = t.noFileChosen;
+      }
+    });
+  } else {
+    // 更新現有自訂按鈕的文字
+    const customButton = customUploadContainer.querySelector('.custom-file-button');
+    const fileNameDisplay = customUploadContainer.querySelector('.file-name-display');
+    
+    if (customButton) {
+      customButton.textContent = t.chooseFile;
+    }
+    
+    // 如果沒有選中檔案，更新顯示文字
+    if (fileInput.files.length === 0 && fileNameDisplay) {
+      fileNameDisplay.textContent = t.noFileChosen;
+    }
+  }
 }
 
 function updateStep1Form(lang) {
