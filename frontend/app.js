@@ -108,6 +108,9 @@ function initializeApp() {
   document
     .getElementById("regenerate-rationale")
     .addEventListener("click", regenerateRationale);
+  document
+    .getElementById("edit-rationale")
+    .addEventListener("click", () => editContent("rationale"));
 
   // Step 3: 學習目標
   document
@@ -119,6 +122,9 @@ function initializeApp() {
   document
     .getElementById("regenerate-objectives")
     .addEventListener("click", regenerateObjectives);
+  document
+    .getElementById("edit-objectives")
+    .addEventListener("click", () => editContent("objectives"));
 
   // Step 4: 教學策略
   document
@@ -130,6 +136,9 @@ function initializeApp() {
   document
     .getElementById("regenerate-strategies")
     .addEventListener("click", regenerateStrategies);
+  document
+    .getElementById("edit-strategies")
+    .addEventListener("click", () => editContent("strategies"));
 
   // Step 5: 教學流程
   document
@@ -138,6 +147,9 @@ function initializeApp() {
   document
     .getElementById("regenerate-flow")
     .addEventListener("click", regenerateFlow);
+  document
+    .getElementById("edit-flow")
+    ?.addEventListener("click", () => editContent("flow"));
   document
     .getElementById("toggle-gamma-settings")
     .addEventListener("click", toggleGammaSettings);
@@ -154,6 +166,9 @@ function initializeApp() {
   document
     .getElementById("regenerate-worksheet")
     .addEventListener("click", regenerateWorksheet);
+  document
+    .getElementById("edit-worksheet")
+    .addEventListener("click", () => editContent("worksheet"));
   document
     .getElementById("download-worksheet")
     .addEventListener("click", downloadWorksheet);
@@ -876,28 +891,31 @@ async function regenerateWorksheet() {
 
 async function downloadWorksheet() {
   console.log("下載學習單");
-  
-  const worksheetContent = document.getElementById("worksheet-content").textContent;
-  
+
+  const worksheetContent =
+    document.getElementById("worksheet-content").textContent;
+
   if (!worksheetContent || !worksheetContent.trim()) {
     alert("請先生成學習單內容");
     return;
   }
-  
+
   // 轉換內容為 HTML 格式
   const htmlContent = convertWorksheetToHTML(worksheetContent);
-  
+
   // 創建下載連結
-  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+  const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
-  a.download = `學習單_${courseData.title || '課程'}_${new Date().toISOString().split('T')[0]}.html`;
+  a.download = `學習單_${courseData.title || "課程"}_${
+    new Date().toISOString().split("T")[0]
+  }.html`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  
+
   alert("學習單已下載！您可以用瀏覽器打開文件進行列印。");
 }
 
@@ -905,30 +923,36 @@ function convertWorksheetToHTML(content) {
   // 將 Markdown 格式轉換為 HTML
   let html = content
     // 先轉換段落（將空行轉為 </p><p>）
-    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n\n/g, "</p><p>")
     // 標題
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
     // 加粗
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     // 斜體
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
     // 列表
-    .replace(/^(\d+)\. (.+)$/gm, '<p style="margin-left: 20px; margin-bottom: 8px;">$1. $2</p>')
-    .replace(/^- (.+)$/gm, '<p style="margin-left: 20px; margin-bottom: 8px;">• $1</p>');
-  
+    .replace(
+      /^(\d+)\. (.+)$/gm,
+      '<p style="margin-left: 20px; margin-bottom: 8px;">$1. $2</p>'
+    )
+    .replace(
+      /^- (.+)$/gm,
+      '<p style="margin-left: 20px; margin-bottom: 8px;">• $1</p>'
+    );
+
   // 包裝在 p 標籤中
-  html = '<p>' + html + '</p>';
-  
+  html = "<p>" + html + "</p>";
+
   // 創建完整的 HTML 結構
   return `<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${courseData.title || '學習單'}</title>
+  <title>${courseData.title || "學習單"}</title>
   <style>
     @media print {
       @page {
@@ -1028,13 +1052,115 @@ function convertWorksheetToHTML(content) {
   
   <div class="page">
     <div class="header">
-      <h1>${courseData.title || '學習單'}</h1>
-      <p>年級：${courseData.grade || '未指定'} | 日期：${new Date().toLocaleDateString('zh-TW')}</p>
+      <h1>${courseData.title || "學習單"}</h1>
+      <p>年級：${
+        courseData.grade || "未指定"
+      } | 日期：${new Date().toLocaleDateString("zh-TW")}</p>
     </div>
     ${html}
   </div>
 </body>
 </html>`;
+}
+
+// 編輯內容功能
+function editContent(type) {
+  const contentElement = document.getElementById(`${type}-content`);
+  if (!contentElement) {
+    alert("找不到內容元素");
+    return;
+  }
+
+  const currentContent = contentElement.textContent;
+  
+  // 創建編輯彈窗
+  const modal = document.createElement("div");
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  `;
+  
+  modal.innerHTML = `
+    <div style="
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 80%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    ">
+      <h2 style="margin-top: 0;">編輯內容</h2>
+      <textarea id="edit-textarea" style="
+        width: 100%;
+        min-height: 400px;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 14px;
+        resize: vertical;
+      ">${currentContent}</textarea>
+      <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+        <button id="cancel-edit" class="btn btn-secondary">取消</button>
+        <button id="save-edit" class="btn btn-primary">儲存</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // 取消按鈕
+  modal.querySelector("#cancel-edit").addEventListener("click", () => {
+    document.body.removeChild(modal);
+  });
+  
+  // 儲存按鈕
+  modal.querySelector("#save-edit").addEventListener("click", () => {
+    const newContent = modal.querySelector("#edit-textarea").value;
+    contentElement.textContent = newContent;
+    
+    // 更新 courseData
+    const keys = {
+      rationale: "rationale",
+      objectives: "objectives",
+      strategies: "strategies",
+      flow: "teaching_flow",
+      worksheet: "worksheet"
+    };
+    
+    if (keys[type]) {
+      courseData[keys[type]] = newContent;
+    }
+    
+    document.body.removeChild(modal);
+    alert("內容已更新！");
+  });
+  
+  // ESC 鍵關閉
+  const escapeHandler = (e) => {
+    if (e.key === "Escape") {
+      document.body.removeChild(modal);
+      document.removeEventListener("keydown", escapeHandler);
+    }
+  };
+  document.addEventListener("keydown", escapeHandler);
+  
+  // 點擊背景關閉
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      document.body.removeChild(modal);
+      document.removeEventListener("keydown", escapeHandler);
+    }
+  });
 }
 
 function initializePromptEditor() {
