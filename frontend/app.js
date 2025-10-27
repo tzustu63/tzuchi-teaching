@@ -19,7 +19,9 @@ function initializeApp() {
 
   // 初始化側邊欄 AI 模型選擇器
   const sidebarModelSelect = document.getElementById("sidebar-ai-model-select");
-  const sidebarSubmodelSelect = document.getElementById("sidebar-ai-submodel-select");
+  const sidebarSubmodelSelect = document.getElementById(
+    "sidebar-ai-submodel-select"
+  );
   const mainModelSelect = document.getElementById("ai-model-select");
   const startUsingBtn = document.getElementById("start-using");
 
@@ -35,9 +37,11 @@ function initializeApp() {
           option.style.display = "none";
         }
       });
-      
+
       // 選取該提供商的第一個模型作為預設
-      const firstVisibleOption = sidebarSubmodelSelect.querySelector(`option[data-provider="${provider}"]:not([style*="display: none"])`);
+      const firstVisibleOption = sidebarSubmodelSelect.querySelector(
+        `option[data-provider="${provider}"]:not([style*="display: none"])`
+      );
       if (firstVisibleOption) {
         sidebarSubmodelSelect.value = firstVisibleOption.value;
         localStorage.setItem("ai_submodel", firstVisibleOption.value);
@@ -49,7 +53,7 @@ function initializeApp() {
       const selectedProvider = e.target.value;
       updateSubmodelOptions(selectedProvider);
       localStorage.setItem("ai_model", selectedProvider);
-      
+
       // 同步到主選擇器（如果存在）
       if (mainModelSelect) {
         mainModelSelect.value = selectedProvider;
@@ -65,15 +69,15 @@ function initializeApp() {
     // 載入已儲存的選擇
     const savedModel = localStorage.getItem("ai_model") || "openai";
     const savedSubmodel = localStorage.getItem("ai_submodel");
-    
+
     sidebarModelSelect.value = savedModel;
     updateSubmodelOptions(savedModel);
-    
+
     // 如果有保存的子模型，則使用它
     if (savedSubmodel) {
       sidebarSubmodelSelect.value = savedSubmodel;
     }
-    
+
     if (mainModelSelect) {
       mainModelSelect.value = savedModel;
     }
@@ -301,10 +305,10 @@ async function generateRationale() {
 
     console.log("📤 發送給後端的完整數據:", requestData);
 
-    // 加入子模型選擇
-    const aiSubmodel = localStorage.getItem("ai_submodel") || "gpt-4o";
+    // 加入子模型選擇（如果沒有選擇則使用預設）
+    const aiSubmodel = localStorage.getItem("ai_submodel") || (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
     requestData.ai_submodel = aiSubmodel;
-    
+
     // 呼叫後端 API 生成教學理念
     const response = await fetch(`${API_BASE_URL}/courses/generate-rationale`, {
       method: "POST",
@@ -448,7 +452,7 @@ async function generateObjectives() {
     console.log("生成學習目標，使用模型:", aiModel);
 
     // 呼叫後端 API 生成學習目標
-    const aiSubmodel = localStorage.getItem("ai_submodel") || "gpt-4o";
+    const aiSubmodel = localStorage.getItem("ai_submodel") || (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-objectives`,
       {
@@ -504,13 +508,17 @@ async function generateStrategies() {
       "⌛ 正在生成教學策略...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
 
-    const aiSubmodel = localStorage.getItem("ai_submodel") || "gpt-4o";
+    const aiSubmodel = localStorage.getItem("ai_submodel") || (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-strategies`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...courseData, ai_model: aiModel, ai_submodel: aiSubmodel }),
+        body: JSON.stringify({
+          ...courseData,
+          ai_model: aiModel,
+          ai_submodel: aiSubmodel,
+        }),
       }
     );
 
@@ -545,11 +553,15 @@ async function generateFlow() {
       "⌛ 正在生成教學流程...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
 
-    const aiSubmodel = localStorage.getItem("ai_submodel") || "gpt-4o";
+    const aiSubmodel = localStorage.getItem("ai_submodel") || (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
     const response = await fetch(`${API_BASE_URL}/courses/generate-flow`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...courseData, ai_model: aiModel, ai_submodel: aiSubmodel }),
+      body: JSON.stringify({
+        ...courseData,
+        ai_model: aiModel,
+        ai_submodel: aiSubmodel,
+      }),
     });
 
     const data = await response.json();

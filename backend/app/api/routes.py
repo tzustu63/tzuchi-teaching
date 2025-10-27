@@ -235,7 +235,7 @@ async def generate_rationale(
         print(f"✅ Prompt 組合完成，長度: {len(prompt)} 字元")
         
         # 調用 AI API（使用前端選擇的子模型）
-        ai_submodel = basic_info.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
+        ai_submodel = basic_info.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-3-5-sonnet-20241022")
         print(f"🤖 開始調用 {ai_model} API 生成內容...")
         print(f"📡 使用子模型: {ai_submodel}")
         rationale = service.generate_content(prompt, model=ai_submodel)
@@ -290,7 +290,7 @@ async def generate_objectives(
         )
         
         # 調用 API（使用前端選擇的子模型）
-        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-3-5-sonnet-20241022")
         print(f"📡 使用子模型: {ai_submodel}")
         objectives = service.generate_content(prompt, model=ai_submodel)
         
@@ -341,7 +341,7 @@ async def generate_strategies(
         )
         
         # 調用 API（使用前端選擇的子模型）
-        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-3-5-sonnet-20241022")
         print(f"📡 使用子模型: {ai_submodel}")
         strategies = service.generate_content(prompt, model=ai_submodel)
         
@@ -392,7 +392,7 @@ async def generate_flow(
         )
         
         # 調用 API（使用前端選擇的子模型）
-        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-3-5-sonnet-20241022")
         print(f"📡 使用子模型: {ai_submodel}")
         flow = service.generate_content(prompt, model=ai_submodel)
         

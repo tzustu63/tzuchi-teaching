@@ -17,7 +17,7 @@ class ClaudeService:
     def generate_content(
         self,
         prompt: str,
-        model: str = "claude-sonnet-4-5",  # Claude Sonnet 4.5 (最新版本)
+        model: str = "claude-3-5-sonnet-20241022",  # Claude 3.5 Sonnet (最新版本)
         max_tokens: Optional[int] = None,
         temperature: float = 0.7
     ) -> str:
