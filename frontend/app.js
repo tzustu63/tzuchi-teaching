@@ -40,7 +40,7 @@ const translations = {
     edit: "編輯",
     regenerate: "重新生成",
     download: "下載學習單",
-    generateMaterials: "生成教學材料",
+    generateMaterials: "製作學習單",
     courseTitle: "課程標題",
     grade: "年級",
     courseDuration: "課程時長（分鐘）",
