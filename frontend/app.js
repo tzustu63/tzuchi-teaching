@@ -52,6 +52,12 @@ const translations = {
     equipmentPlaceholder: "例如: 投影機、電腦、白板",
     supportedFormats: "支援格式: .docx, .pdf, .txt（最大 10MB）",
     nextRationale: "下一步：生成教學理念",
+    nextObjectives: "下一步：生成學習目標",
+    nextStrategies: "下一步：生成教學策略",
+    nextFlow: "下一步：生成教學流程",
+    gammaSettings: "Gamma 設定",
+    closeSettings: "關閉設定",
+    downloadAll: "下載所有材料",
   },
   en: {
     title: "Lesson Plan Generator",
@@ -94,6 +100,12 @@ const translations = {
     equipmentPlaceholder: "e.g., Projector, Computer, Whiteboard",
     supportedFormats: "Supported formats: .docx, .pdf, .txt (max 10MB)",
     nextRationale: "Next Step: Generate Teaching Philosophy",
+    nextObjectives: "Next Step: Generate Learning Objectives",
+    nextStrategies: "Next Step: Generate Teaching Strategies",
+    nextFlow: "Next Step: Generate Teaching Flow",
+    gammaSettings: "Gamma Settings",
+    closeSettings: "Close Settings",
+    downloadAll: "Download All Materials",
   },
 };
 
@@ -744,14 +756,15 @@ async function regenerateFlow() {
 function toggleGammaSettings() {
   const settingsPanel = document.getElementById("gamma-settings-panel");
   const toggleBtn = document.getElementById("toggle-gamma-settings");
+  const t = translations[currentLanguage];
 
   if (settingsPanel.style.display === "none") {
     settingsPanel.style.display = "block";
-    toggleBtn.textContent = "❌ 關閉設定";
+    toggleBtn.textContent = `❌ ${t.closeSettings}`;
     toggleBtn.classList.add("btn-active");
   } else {
     settingsPanel.style.display = "none";
-    toggleBtn.textContent = "⚙️ Gamma 設定";
+    toggleBtn.textContent = `⚙️ ${t.gammaSettings}`;
     toggleBtn.classList.remove("btn-active");
   }
 }
@@ -1535,17 +1548,22 @@ function applyLanguage(lang) {
   const buttonsToUpdate = [
     { id: "edit-rationale", text: t.edit },
     { id: "regenerate-rationale", text: t.regenerate },
+    { id: "confirm-rationale", text: t.nextObjectives },
     { id: "edit-objectives", text: t.edit },
     { id: "regenerate-objectives", text: t.regenerate },
+    { id: "confirm-objectives", text: t.nextStrategies },
     { id: "edit-strategies", text: t.edit },
     { id: "regenerate-strategies", text: t.regenerate },
+    { id: "confirm-strategies", text: t.nextFlow },
     { id: "edit-flow", text: t.edit },
     { id: "regenerate-flow", text: t.regenerate },
     { id: "generate-worksheets", text: t.nextStep + t.generateMaterials },
     { id: "edit-worksheet", text: t.edit },
     { id: "regenerate-worksheet", text: t.regenerate },
     { id: "download-worksheet", text: t.download },
-    { id: "download-all", text: "下載所有材料" },
+    { id: "generate-materials", text: t.generateMaterials },
+    { id: "toggle-gamma-settings", text: `⚙️ ${t.gammaSettings}` },
+    { id: "download-all", text: t.downloadAll },
     { id: "start-using", text: `✅ ${t.start}` },
   ];
 
