@@ -214,7 +214,13 @@ function initializeApp() {
         await generateObjectives();
         proceedToStep(3);
       } finally {
-        setGeneratingState("confirm-rationale", false, currentLanguage === "en" ? "Next: Generate Learning Objectives" : "下一步：生成學習目標");
+        setGeneratingState(
+          "confirm-rationale",
+          false,
+          currentLanguage === "en"
+            ? "Next: Generate Learning Objectives"
+            : "下一步：生成學習目標"
+        );
       }
     });
   document
@@ -279,7 +285,17 @@ function initializeApp() {
   // Step 5: 教學流程
   document
     .getElementById("generate-materials")
-    .addEventListener("click", generateMaterials);
+    .addEventListener("click", async () => {
+      // 顯示生成中狀態
+      const button = document.getElementById("generate-materials");
+      const originalText = button.textContent;
+      setGeneratingState("generate-materials", true, "生成教學材料中...");
+      try {
+        await generateMaterials();
+      } finally {
+        setGeneratingState("generate-materials", false, originalText);
+      }
+    });
   document
     .getElementById("regenerate-flow")
     .addEventListener("click", regenerateFlow);
@@ -294,8 +310,14 @@ function initializeApp() {
   document
     .getElementById("generate-worksheets")
     .addEventListener("click", async () => {
-      await generateWorksheets();
-      proceedToStep(7);
+      // 顯示生成中狀態
+      setGeneratingState("generate-worksheets", true, "下一步：生成中...");
+      try {
+        await generateWorksheets();
+        proceedToStep(7);
+      } finally {
+        setGeneratingState("generate-worksheets", false, currentLanguage === "en" ? "Next: Create Worksheet" : "下一步：製作學習單");
+      }
     });
 
   // Step 7: 製作學習單
@@ -822,7 +844,7 @@ async function generateMaterials() {
 
   console.log("Gamma 設定:", gammaSettings);
 
-  // 顯示載入狀態
+  // 顯示載入狀態（Gamma 生成時間較長）
   showStatus("正在生成 PPT，請稍候...", "info");
 
   try {
