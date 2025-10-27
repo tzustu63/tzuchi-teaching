@@ -6,7 +6,7 @@ psycopg2-binary==2.9.11
 pydantic==2.10.5
 pydantic-settings==2.6.1
 openai==1.57.2
-anthropic==0.42.2
+anthropic==0.42.1
 python-multipart==0.0.19
 cryptography==44.0.0
 python-docx==1.1.2
