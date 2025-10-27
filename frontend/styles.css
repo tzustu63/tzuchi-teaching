@@ -1,4 +1,41 @@
 /* 課程計劃生成器樣式 */
+
+/* 自訂檔案上傳按鈕樣式 */
+.custom-file-upload {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.custom-file-button {
+  background: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.custom-file-button:hover {
+  background: #0056b3;
+}
+
+.file-name-display {
+  margin-left: 10px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* 隱藏原生檔案輸入框 */
+#upload-file[style*="opacity"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: pointer !important;
+}
 * {
   margin: 0;
   padding: 0;
