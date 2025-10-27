@@ -79,7 +79,10 @@ class ClaudeService:
             return ""
         
         except Exception as e:
-            raise Exception(f"Claude API 調用失敗: {str(e)}")
+            print(f"❌ Claude API 錯誤詳情: {type(e).__name__}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise Exception(f"Claude API 調用失敗: {type(e).__name__}: {str(e)}")
     
     def replace_variables(self, template: str, variables: Dict[str, Any]) -> str:
         """
