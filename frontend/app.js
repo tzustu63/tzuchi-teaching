@@ -279,11 +279,6 @@ function initializeApp() {
     .getElementById("download-worksheet")
     .addEventListener("click", downloadWorksheet);
 
-  // 最終下載
-  document
-    .getElementById("download-all")
-    .addEventListener("click", downloadAll);
-
   // Prompt 編輯器
   initializePromptEditor();
 
@@ -1053,7 +1048,7 @@ async function generateWorksheets() {
       courseData.worksheet = data.worksheet;
       console.log(`📊 學習單內容長度: ${data.worksheet?.length || 0} 字元`);
       resetStyles();
-      
+
       // 學習單生成完成後自動保存課程計劃
       console.log("💾 學習單已完成，自動保存課程計劃...");
       await saveCoursePlan();
@@ -1590,7 +1585,6 @@ function applyLanguage(lang) {
     { id: "download-worksheet", text: t.download },
     { id: "generate-materials", text: t.generateMaterials },
     { id: "toggle-gamma-settings", text: `⚙️ ${t.gammaSettings}` },
-    { id: "download-all", text: t.downloadAll },
     { id: "start-using", text: `✅ ${t.start}` },
   ];
 
