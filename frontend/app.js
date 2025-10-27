@@ -755,7 +755,7 @@ async function checkGammaStatus(generationId) {
 
           // 顯示結果並確保按鈕可見
           showMaterialResult(data.gamma_url);
-          
+
           // 跳轉到步驟6
           proceedToStep(6);
           return true;
@@ -795,9 +795,11 @@ function showMaterialResult(gammaUrl) {
         </p>
       </div>
     `;
-    
+
     // 顯示「下一步：製作學習單」按鈕
-    const generateWorksheetsBtn = document.getElementById("generate-worksheets");
+    const generateWorksheetsBtn = document.getElementById(
+      "generate-worksheets"
+    );
     if (generateWorksheetsBtn) {
       generateWorksheetsBtn.style.display = "inline-block";
     }
@@ -874,7 +876,166 @@ async function regenerateWorksheet() {
 
 async function downloadWorksheet() {
   console.log("下載學習單");
-  alert("學習單下載功能待實作");
+  
+  const worksheetContent = document.getElementById("worksheet-content").textContent;
+  
+  if (!worksheetContent || !worksheetContent.trim()) {
+    alert("請先生成學習單內容");
+    return;
+  }
+  
+  // 轉換內容為 HTML 格式
+  const htmlContent = convertWorksheetToHTML(worksheetContent);
+  
+  // 創建下載連結
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `學習單_${courseData.title || '課程'}_${new Date().toISOString().split('T')[0]}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  alert("學習單已下載！您可以用瀏覽器打開文件進行列印。");
+}
+
+function convertWorksheetToHTML(content) {
+  // 將 Markdown 格式轉換為 HTML
+  let html = content
+    // 標題
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    // 加粗
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // 斜體
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // 列表
+    .replace(/^(\d+)\. (.+)$/gm, '<p style="margin-left: 20px;">$1. $2</p>')
+    .replace(/^- (.+)$/gm, '<p style="margin-left: 20px;">• $1</p>');
+  
+  // 添加分頁標記（每 2000 字元）
+  const pageSize = 2000;
+  const pages = [];
+  for (let i = 0; i < html.length; i += pageSize) {
+    pages.push(html.substr(i, pageSize));
+  }
+  
+  // 創建完整的 HTML 結構
+  return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${courseData.title || '學習單'}</title>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 1.5cm;
+      }
+      .page {
+        page-break-after: always;
+        page-break-inside: avoid;
+      }
+      .no-print {
+        display: none;
+      }
+    }
+    body {
+      font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 21cm;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+    }
+    h1 {
+      font-size: 24px;
+      color: #4a90e2;
+      border-bottom: 3px solid #4a90e2;
+      padding-bottom: 10px;
+      margin-top: 30px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-size: 20px;
+      color: #666;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+      margin-top: 25px;
+      margin-bottom: 15px;
+    }
+    h3 {
+      font-size: 18px;
+      color: #888;
+      margin-top: 20px;
+      margin-bottom: 12px;
+    }
+    p {
+      margin: 10px 0;
+      text-align: justify;
+    }
+    strong {
+      color: #2c3e50;
+      font-weight: bold;
+    }
+    .page {
+      min-height: 29.7cm;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #4a90e2;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      border: none;
+      padding: 0;
+    }
+    .btn-print {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 20px 0;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .btn-print:hover {
+      background: #357abd;
+    }
+    @media print {
+      .btn-print {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button class="btn-print" onclick="window.print()">🖨️ 列印學習單</button>
+  </div>
+  
+  <div class="page">
+    <div class="header">
+      <h1>${courseData.title || '學習單'}</h1>
+      <p>年級：${courseData.grade || '未指定'} | 日期：${new Date().toLocaleDateString('zh-TW')}</p>
+    </div>
+    ${html}
+  </div>
+</body>
+</html>`;
 }
 
 function initializePromptEditor() {
