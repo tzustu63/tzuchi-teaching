@@ -183,16 +183,22 @@
 
       <div class="container">
         <!-- 歷史記錄頁面 -->
-        <section id="history-page" class="card" style="display: none;">
+        <section id="history-page" class="card" style="display: none">
           <h2>📚 課程計劃歷史記錄</h2>
           <div id="history-list" class="history-list"></div>
         </section>
 
         <!-- 課程計劃詳情頁面 -->
-        <section id="plan-detail-page" class="card" style="display: none;">
+        <section id="plan-detail-page" class="card" style="display: none">
           <h2 id="detail-title">課程計劃詳情</h2>
-          <button id="back-to-history" class="btn btn-secondary" onclick="goBackToHistory()">← 返回歷史記錄</button>
-          
+          <button
+            id="back-to-history"
+            class="btn btn-secondary"
+            onclick="goBackToHistory()"
+          >
+            ← 返回歷史記錄
+          </button>
+
           <div id="detail-content" class="plan-detail-content"></div>
         </section>
 
@@ -355,7 +361,7 @@
                 ⚙️ Gamma 設定
               </button>
               <button id="generate-materials" class="btn btn-primary">
-                生成教學材料
+                下一步：製作學習單
               </button>
             </div>
 
