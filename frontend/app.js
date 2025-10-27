@@ -983,46 +983,62 @@ async function downloadWorksheet() {
 
 function convertWorksheetToHTML(content) {
   // 按大標題分割內容，每個大單元一頁
-  const sections = content.split(/(?=^[一-九]、|^[一二三四五六七八九十]+、|^一、|^二、|^三、|^四、|^五、|^六、)/m);
-  
+  const sections = content.split(
+    /(?=^[一-九]、|^[一二三四五六七八九十]+、|^一、|^二、|^三、|^四、|^五、|^六、)/m
+  );
+
   let pagesHTML = "";
-  
+
   sections.forEach((section, index) => {
     if (!section.trim()) return;
-    
+
     // 轉換每個段落
     let html = section
       // 大標題
       .replace(/^([一-九]、.+)$/gm, "<h1>$1</h1>")
       .replace(/^([一二三四五六七八九十]+、.+)$/gm, "<h1>$1</h1>")
       // 小標題
-      .replace(/^（(.+?)）$/gm, "<h4 style='color: #666; font-weight: normal;'>（$1）</h4>")
+      .replace(
+        /^（(.+?)）$/gm,
+        "<h4 style='color: #666; font-weight: normal;'>（$1）</h4>"
+      )
       // 加粗文字
       .replace(/\*\*(.+?)\*\*/g, "<strong style='color: #2c3e50;'>$1</strong>")
       // 列表項目
-      .replace(/^(\d+)[.．] (.+)$/gm, '<p style="margin-left: 25px; margin-bottom: 6px; line-height: 1.8;">$1. $2</p>')
-      .replace(/^[-－] (.+)$/gm, '<p style="margin-left: 25px; margin-bottom: 6px; line-height: 1.8;">• $1</p>')
+      .replace(
+        /^(\d+)[.．] (.+)$/gm,
+        '<p style="margin-left: 25px; margin-bottom: 6px; line-height: 1.8;">$1. $2</p>'
+      )
+      .replace(
+        /^[-－] (.+)$/gm,
+        '<p style="margin-left: 25px; margin-bottom: 6px; line-height: 1.8;">• $1</p>'
+      )
       // 冒號後面特殊標註
-      .replace(/：(.+)/g, "：<span style='color: #4a90e2; font-weight: bold;'>$1</span>");
-    
+      .replace(
+        /：(.+)/g,
+        "：<span style='color: #4a90e2; font-weight: bold;'>$1</span>"
+      );
+
     // 普通段落
-    const lines = html.split('\n');
+    const lines = html.split("\n");
     let processedLines = [];
-    
-    lines.forEach(line => {
+
+    lines.forEach((line) => {
       const trimmedLine = line.trim();
       if (!trimmedLine) return;
-      
+
       // 如果不是 HTML 標籤，視為普通段落
-      if (!trimmedLine.startsWith('<') && trimmedLine.length > 0) {
-        processedLines.push(`<p style="margin: 8px 0; line-height: 1.8; text-align: justify;">${trimmedLine}</p>`);
+      if (!trimmedLine.startsWith("<") && trimmedLine.length > 0) {
+        processedLines.push(
+          `<p style="margin: 8px 0; line-height: 1.8; text-align: justify;">${trimmedLine}</p>`
+        );
       } else {
         processedLines.push(line);
       }
     });
-    
-    html = processedLines.join('\n');
-    
+
+    html = processedLines.join("\n");
+
     // 每頁包裝
     pagesHTML += `
       <div class="page-break"></div>
@@ -1189,21 +1205,28 @@ function editContent(type) {
       background: white;
       padding: 30px;
       border-radius: 10px;
-      max-width: 80%;
-      max-height: 80vh;
-      overflow-y: auto;
+      width: 90%;
+      max-width: 1200px;
+      height: 85vh;
+      max-height: 85vh;
+      overflow: hidden;
       position: relative;
+      display: flex;
+      flex-direction: column;
     ">
-      <h2 style="margin-top: 0;">編輯內容</h2>
+      <h2 style="margin-top: 0; margin-bottom: 15px;">編輯內容</h2>
       <textarea id="edit-textarea" style="
         width: 100%;
-        min-height: 400px;
-        padding: 10px;
+        height: calc(85vh - 150px);
+        min-height: 500px;
+        padding: 15px;
         border: 2px solid #ddd;
         border-radius: 5px;
         font-family: monospace;
-        font-size: 14px;
+        font-size: 15px;
         resize: vertical;
+        overflow-y: auto;
+        flex: 1;
       ">${currentContent}</textarea>
       <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
         <button id="cancel-edit" class="btn btn-secondary">取消</button>
