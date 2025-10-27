@@ -236,9 +236,11 @@ async def generate_rationale(
         
         # 調用 AI API（使用前端選擇的子模型）
         ai_submodel = basic_info.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        language = basic_info.get("language", "zh")
         print(f"🤖 開始調用 {ai_model} API 生成內容...")
         print(f"📡 使用子模型: {ai_submodel}")
-        rationale = service.generate_content(prompt, model=ai_submodel)
+        print(f"🌐 輸出語言: {language}")
+        rationale = service.generate_content(prompt, model=ai_submodel, language=language)
         
         print(f"✅ 內容生成完成！")
         print(f"📊 生成的教學理念長度: {len(rationale)} 字元")
@@ -291,8 +293,10 @@ async def generate_objectives(
         
         # 調用 API（使用前端選擇的子模型）
         ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        language = request_data.get("language", "zh")
         print(f"📡 使用子模型: {ai_submodel}")
-        objectives = service.generate_content(prompt, model=ai_submodel)
+        print(f"🌐 輸出語言: {language}")
+        objectives = service.generate_content(prompt, model=ai_submodel, language=language)
         
         return {
             "status": "success",
@@ -342,8 +346,10 @@ async def generate_strategies(
         
         # 調用 API（使用前端選擇的子模型）
         ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        language = request_data.get("language", "zh")
         print(f"📡 使用子模型: {ai_submodel}")
-        strategies = service.generate_content(prompt, model=ai_submodel)
+        print(f"🌐 輸出語言: {language}")
+        strategies = service.generate_content(prompt, model=ai_submodel, language=language)
         
         return {
             "status": "success",
@@ -393,8 +399,10 @@ async def generate_flow(
         
         # 調用 API（使用前端選擇的子模型）
         ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        language = request_data.get("language", "zh")
         print(f"📡 使用子模型: {ai_submodel}")
-        flow = service.generate_content(prompt, model=ai_submodel)
+        print(f"🌐 輸出語言: {language}")
+        flow = service.generate_content(prompt, model=ai_submodel, language=language)
         
         return {
             "status": "success",
@@ -444,8 +452,10 @@ async def generate_worksheet(
         
         # 調用 API（使用前端選擇的子模型）
         ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        language = request_data.get("language", "zh")
         print(f"📡 使用子模型: {ai_submodel}")
-        worksheet = service.generate_content(prompt, model=ai_submodel)
+        print(f"🌐 輸出語言: {language}")
+        worksheet = service.generate_content(prompt, model=ai_submodel, language=language)
         
         return {
             "status": "success",

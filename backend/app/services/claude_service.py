@@ -19,7 +19,8 @@ class ClaudeService:
             prompt: str,
             model: str = "claude-sonnet-4-5-20250929",  # Claude Sonnet 4.5 (最新版本)
         max_tokens: Optional[int] = None,
-        temperature: float = 0.7
+        temperature: float = 0.7,
+        language: str = "zh"
     ) -> str:
         """
         生成內容
@@ -29,16 +30,23 @@ class ClaudeService:
             model: 使用的模型
             max_tokens: 最大令牌數（預設 8192，約 6000-7000 字）
             temperature: 溫度參數
+            language: 輸出語言 ('zh' 或 'en')
             
         Returns:
             生成的文字內容
         """
         try:
+            # 根據語言調整系統提示
+            if language == "en":
+                system_message = "You are an experienced curriculum design expert specializing in lesson planning. Please generate complete and detailed content in English."
+            else:
+                system_message = "你是一位資深的教學設計專家，專精於課程計劃的撰寫。請生成完整且詳細的內容。"
+            
             params = {
                 "model": model,
                 "max_tokens": max_tokens if max_tokens else 8192,  # 增加到 8192 tokens
                 "temperature": temperature,
-                "system": "你是一位資深的教學設計專家，專精於課程計劃的撰寫。請生成完整且詳細的內容。",
+                "system": system_message,
                 "messages": [
                     {
                         "role": "user",
