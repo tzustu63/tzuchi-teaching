@@ -8,7 +8,9 @@ pydantic-settings
 openai
 anthropic
 python-multipart
+python-pptx
 cryptography
+reportlab
 python-docx
 PyPDF2
 jinja2
