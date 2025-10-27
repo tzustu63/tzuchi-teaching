@@ -326,6 +326,9 @@ small {
   line-height: 1.8;
   border-left: 4px solid #3498db;
   min-height: 100px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .step-actions {
@@ -474,4 +477,111 @@ footer a:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Gamma 設定面板 */
+.gamma-settings-panel {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gamma-settings-panel .setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gamma-settings-panel .setting-group label {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #333;
+}
+
+.gamma-settings-panel .modern-select,
+.gamma-settings-panel .modern-input {
+  width: 100%;
+  padding: 10px 15px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  color: #333;
+  font-size: 1em;
+  transition: all 0.3s ease;
+}
+
+.gamma-settings-panel .modern-select:focus,
+.gamma-settings-panel .modern-input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  background: #f8f9fa;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+.gamma-settings-panel .modern-select option {
+  background: white;
+  color: #333;
+}
+
+/* 按鈕樣式 */
+.btn-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-info.btn-active {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* 狀態訊息 */
+.status-success {
+  background: rgba(46, 204, 113, 0.2);
+  border-left: 4px solid #2ecc71;
+  color: #2ecc71;
+  padding: 15px;
+  border-radius: 8px;
+  white-space: pre-line;
+}
+
+.status-error {
+  background: rgba(231, 76, 60, 0.2);
+  border-left: 4px solid #e74c3c;
+  color: #e74c3c;
+  padding: 15px;
+  border-radius: 8px;
+  white-space: pre-line;
+}
+
+.status-info {
+  background: rgba(52, 152, 219, 0.2);
+  border-left: 4px solid #3498db;
+  color: #3498db;
+  padding: 15px;
+  border-radius: 8px;
+  white-space: pre-line;
 }

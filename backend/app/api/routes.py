@@ -503,13 +503,28 @@ async def generate_ppt(
 ):
     """生成 PPT（使用 Gamma API）"""
     try:
-        # 使用預設的 Gamma API Key
-        gamma_api_key = "sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8"
+        print(f"📊 收到 PPT 生成請求")
+        
+        # 使用 Gamma API Key（從設定或環境變數讀取）
+        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY") or "sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8"
+        
+        if not gamma_api_key:
+            raise HTTPException(status_code=500, detail="未設定 Gamma API Key")
         
         gamma_service = GammaService(gamma_api_key)
         
         # 準備課程內容
         title = request_data.get("title", "課程簡報")
+        language = request_data.get("language", "zh-tw")
+        num_cards = request_data.get("num_cards", 10)
+        
+        # 收集額外的 Gamma 設定
+        text_amount = request_data.get("text_amount", "medium")
+        tone = request_data.get("tone", "")
+        audience = request_data.get("audience", "")
+        image_model = request_data.get("image_model", "flux-1-pro")
+        image_style = request_data.get("image_style", "photorealistic")
+        
         content = {
             "basic_info": request_data.get("basic_info", {}),
             "rationale": request_data.get("rationale", ""),
@@ -518,8 +533,26 @@ async def generate_ppt(
             "teaching_flow": request_data.get("teaching_flow", "")
         }
         
+        print(f"📝 準備生成簡報...")
+        print(f"  - 標題: {title}")
+        print(f"  - 語言: {language}")
+        print(f"  - 卡牌數量: {num_cards}")
+        print(f"  - 文字量: {text_amount}")
+        print(f"  - 圖片模型: {image_model}")
+        print(f"  - 圖片風格: {image_style}")
+        
         # 生成 Gamma 簡報
-        result = gamma_service.generate_presentation(title, content)
+        result = gamma_service.generate_presentation(
+            title=title,
+            content=content,
+            language=language,
+            num_cards=num_cards,
+            text_amount=text_amount,
+            tone=tone,
+            audience=audience,
+            image_model=image_model,
+            image_style=image_style
+        )
         
         # 記錄到資料庫
         gamma_gen = GammaGeneration(
@@ -530,6 +563,8 @@ async def generate_ppt(
         db.add(gamma_gen)
         db.commit()
         
+        print(f"✅ PPT 生成請求已提交")
+        
         return {
             "status": "success",
             "generation_id": result["generation_id"],
@@ -537,7 +572,10 @@ async def generate_ppt(
             "status_info": result["status"],
             "message": "PPT 生成中，請稍後檢查狀態"
         }
+    except HTTPException:
+        raise
     except Exception as e:
+        print(f"❌ PPT 生成失敗: {str(e)}")
         raise HTTPException(status_code=500, detail=f"生成 PPT 失敗: {str(e)}")
 
 
@@ -548,7 +586,12 @@ async def check_gamma_status(
 ):
     """檢查 Gamma 生成狀態"""
     try:
-        gamma_api_key = "sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8"
+        # 使用 Gamma API Key（從設定或環境變數讀取）
+        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY") or "sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8"
+        
+        if not gamma_api_key:
+            raise HTTPException(status_code=500, detail="未設定 Gamma API Key")
+        
         gamma_service = GammaService(gamma_api_key)
         
         status = gamma_service.check_generation_status(generation_id)
@@ -557,16 +600,58 @@ async def check_gamma_status(
         gamma_gen = db.query(GammaGeneration).filter_by(generation_id=generation_id).first()
         if gamma_gen:
             gamma_gen.status = status.get("status", "unknown")
-            gamma_gen.gamma_url = status.get("gamma_url")
+            gamma_gen.gamma_url = status.get("gammaUrl")
             db.commit()
         
         return {
             "status": "success",
             "generation_status": status.get("status"),
-            "gamma_url": status.get("gamma_url")
+            "gamma_url": status.get("gammaUrl"),
+            "generation_info": status
         }
+    except HTTPException:
+        raise
     except Exception as e:
+        print(f"❌ 查詢 Gamma 狀態失敗: {str(e)}")
         raise HTTPException(status_code=500, detail=f"查詢狀態失敗: {str(e)}")
+
+
+@router.post("/courses/gamma-wait/{generation_id}")
+async def wait_for_gamma_completion(
+    generation_id: str,
+    timeout: int = 300,
+    db: Session = Depends(get_db)
+):
+    """等待 Gamma 生成完成"""
+    try:
+        # 使用 Gamma API Key（從設定或環境變數讀取）
+        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY") or "sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8"
+        
+        if not gamma_api_key:
+            raise HTTPException(status_code=500, detail="未設定 Gamma API Key")
+        
+        gamma_service = GammaService(gamma_api_key)
+        
+        # 等待生成完成
+        result = gamma_service.wait_for_completion(generation_id, timeout=timeout)
+        
+        # 更新資料庫記錄
+        gamma_gen = db.query(GammaGeneration).filter_by(generation_id=generation_id).first()
+        if gamma_gen:
+            gamma_gen.status = result.get("status")
+            gamma_gen.gamma_url = result.get("gamma_url")
+            db.commit()
+        
+        return {
+            "status": "success",
+            "generation_id": generation_id,
+            "result": result
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ 等待 Gamma 生成完成失敗: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"等待生成完成失敗: {str(e)}")
 
 
 @router.post("/courses/generate-worksheet")

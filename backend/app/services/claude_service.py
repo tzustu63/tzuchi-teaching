@@ -27,7 +27,7 @@ class ClaudeService:
         Args:
             prompt: 輸入的提示詞
             model: 使用的模型
-            max_tokens: 最大令牌數（None 表示無限制，讓模型自己決定）
+            max_tokens: 最大令牌數（預設 8192，約 6000-7000 字）
             temperature: 溫度參數
             
         Returns:
@@ -36,9 +36,9 @@ class ClaudeService:
         try:
             params = {
                 "model": model,
-                "max_tokens": max_tokens if max_tokens else 4096,
+                "max_tokens": max_tokens if max_tokens else 8192,  # 增加到 8192 tokens
                 "temperature": temperature,
-                "system": "你是一位資深的教學設計專家，專精於課程計劃的撰寫。",
+                "system": "你是一位資深的教學設計專家，專精於課程計劃的撰寫。請生成完整且詳細的內容。",
                 "messages": [
                     {
                         "role": "user",
@@ -56,7 +56,18 @@ class ClaudeService:
                 for block in response.content:
                     if hasattr(block, 'text'):
                         text_content += block.text
-                return text_content.strip()
+                
+                result = text_content.strip()
+                
+                # 記錄生成的內容長度
+                print(f"📊 Claude 生成的內容長度: {len(result)} 字元")
+                if len(result) > 1000:
+                    print(f"📝 內容預覽（前500字元）: {result[:500]}...")
+                    print(f"📝 內容結尾（後500字元）: ...{result[-500:]}")
+                else:
+                    print(f"📝 完整內容: {result}")
+                
+                return result
             return ""
         
         except Exception as e:

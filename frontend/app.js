@@ -95,6 +95,9 @@ function initializeApp() {
   document
     .getElementById("regenerate-flow")
     .addEventListener("click", regenerateFlow);
+  document
+    .getElementById("toggle-gamma-settings")
+    .addEventListener("click", toggleGammaSettings);
 
   // 最終下載
   document
@@ -427,6 +430,7 @@ async function generateObjectives() {
       }
       courseData.objectives = data.objectives;
       console.log("學習目標生成成功");
+      console.log(`📊 學習目標內容長度: ${data.objectives?.length || 0} 字元`);
     } else {
       throw new Error(data.detail || "生成失敗");
     }
@@ -469,6 +473,7 @@ async function generateStrategies() {
       document.getElementById("strategies-content").textContent =
         data.strategies;
       courseData.strategies = data.strategies;
+      console.log(`📊 教學策略內容長度: ${data.strategies?.length || 0} 字元`);
     }
   } catch (error) {
     console.error("生成教學策略失敗:", error);
@@ -504,6 +509,7 @@ async function generateFlow() {
     if (data.status === "success") {
       document.getElementById("flow-content").textContent = data.flow;
       courseData.teaching_flow = data.flow;
+      console.log(`📊 教學流程內容長度: ${data.flow?.length || 0} 字元`);
     }
   } catch (error) {
     console.error("生成教學流程失敗:", error);
@@ -516,9 +522,181 @@ async function regenerateFlow() {
   console.log("重新生成教學流程");
 }
 
+function toggleGammaSettings() {
+  const settingsPanel = document.getElementById("gamma-settings-panel");
+  const toggleBtn = document.getElementById("toggle-gamma-settings");
+
+  if (settingsPanel.style.display === "none") {
+    settingsPanel.style.display = "block";
+    toggleBtn.textContent = "❌ 關閉設定";
+    toggleBtn.classList.add("btn-active");
+  } else {
+    settingsPanel.style.display = "none";
+    toggleBtn.textContent = "⚙️ Gamma 設定";
+    toggleBtn.classList.remove("btn-active");
+  }
+}
+
 async function generateMaterials() {
-  console.log("生成教學材料");
-  proceedToStep(6);
+  console.log("生成教學材料 - 使用 Gamma API");
+
+  // 收集 Gamma 設定
+  const gammaSettings = {
+    language: document.getElementById("gamma-language").value,
+    num_cards: parseInt(document.getElementById("gamma-num-cards").value),
+    text_amount: document.getElementById("gamma-text-amount").value,
+    tone: document.getElementById("gamma-tone").value,
+    audience: document.getElementById("gamma-audience").value,
+    image_model: document.getElementById("gamma-image-model").value,
+    image_style: document.getElementById("gamma-image-style").value,
+  };
+
+  console.log("Gamma 設定:", gammaSettings);
+
+  // 顯示載入狀態
+  showStatus("正在生成 PPT，請稍候...", "info");
+
+  try {
+    // 準備請求數據
+    const requestData = {
+      title: courseData.title,
+      language: gammaSettings.language,
+      num_cards: gammaSettings.num_cards,
+      basic_info: {
+        grade: courseData.grade,
+        duration: courseData.duration,
+        student_count: courseData.student_count,
+        classroom_equipment: courseData.classroom_equipment,
+      },
+      rationale: courseData.rationale || "",
+      objectives: courseData.objectives || "",
+      strategies: courseData.strategies || "",
+      teaching_flow: courseData.teaching_flow || "",
+      // 添加額外的 Gamma 設定
+      text_amount: gammaSettings.text_amount,
+      tone: gammaSettings.tone,
+      audience: gammaSettings.audience,
+      image_model: gammaSettings.image_model,
+      image_style: gammaSettings.image_style,
+    };
+
+    console.log("📤 發送 Gamma API 請求:", requestData);
+
+    // 調用 Gamma API
+    const response = await fetch(`${API_BASE_URL}/courses/generate-ppt`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    const data = await response.json();
+
+    console.log("📥 Gamma API 回應:", data);
+
+    if (data.status === "success") {
+      showStatus(
+        `✅ PPT 生成請求已提交！\nGeneration ID: ${data.generation_id}\n狀態: ${data.status_info}`,
+        "success"
+      );
+
+      // 儲存 generation_id 以便後續查詢
+      courseData.gamma_generation_id = data.generation_id;
+
+      // 自動檢查狀態
+      checkGammaStatus(data.generation_id);
+    } else {
+      throw new Error(data.detail || "生成失敗");
+    }
+  } catch (error) {
+    console.error("生成 PPT 失敗:", error);
+    showStatus(`❌ 生成失敗：${error.message}`, "error");
+  }
+}
+
+// 檢查 Gamma 生成狀態
+async function checkGammaStatus(generationId) {
+  console.log(`檢查 Gamma 狀態: ${generationId}`);
+
+  // 每 5 秒檢查一次，最多等待 2 分鐘
+  let attempts = 0;
+  const maxAttempts = 24;
+
+  const checkStatus = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/courses/gamma-status/${generationId}`
+      );
+      const data = await response.json();
+
+      console.log(`狀態檢查 ${attempts + 1}/${maxAttempts}:`, data);
+
+      if (data.status === "success") {
+        if (data.generation_status === "completed") {
+          // 生成完成
+          showStatus(
+            `🎉 PPT 生成完成！\n${
+              data.gamma_url ? `URL: ${data.gamma_url}` : ""
+            }`,
+            "success"
+          );
+
+          // 跳轉到下一步並顯示結果
+          proceedToStep(6);
+          showMaterialResult(data.gamma_url);
+          return true;
+        } else if (data.generation_status === "pending") {
+          // 仍在生成中
+          attempts++;
+          if (attempts < maxAttempts) {
+            setTimeout(checkStatus, 5000);
+          } else {
+            showStatus("⏰ 生成時間較長，請稍後手動檢查狀態", "info");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("檢查狀態失敗:", error);
+      showStatus("❌ 檢查狀態失敗", "error");
+    }
+  };
+
+  await checkStatus();
+}
+
+// 顯示材料結果
+function showMaterialResult(gammaUrl) {
+  const materialsContent = document.getElementById("materials-content");
+  if (materialsContent) {
+    materialsContent.innerHTML = `
+      <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">
+        <h3 style="color: #4a90e2; margin-bottom: 15px;">✅ PPT 生成完成</h3>
+        ${
+          gammaUrl
+            ? `<p><a href="${gammaUrl}" target="_blank" style="color: #4a90e2; text-decoration: underline;">點擊查看簡報</a></p>`
+            : ""
+        }
+        <p style="color: #333; margin-top: 10px;">
+          您可以在 Gamma.app 上查看、編輯並分享您的簡報。
+        </p>
+      </div>
+    `;
+  }
+}
+
+// 顯示狀態訊息
+function showStatus(message, type) {
+  const materialsContent = document.getElementById("materials-content");
+  if (materialsContent) {
+    const className =
+      type === "success"
+        ? "status-success"
+        : type === "error"
+        ? "status-error"
+        : "status-info";
+    materialsContent.innerHTML = `<div class="${className}" style="padding: 15px; margin: 10px 0;">${message}</div>`;
+  }
 }
 
 async function downloadAll() {

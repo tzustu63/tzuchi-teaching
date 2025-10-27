@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     # Claude
     claude_api_key: Optional[str] = None
     
+    # Gamma
+    gamma_api_key: Optional[str] = None
+    
     # Database
     database_url: str = "sqlite:///./course_planner.db"
     
