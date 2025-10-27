@@ -904,24 +904,23 @@ async function downloadWorksheet() {
 function convertWorksheetToHTML(content) {
   // 將 Markdown 格式轉換為 HTML
   let html = content
+    // 先轉換段落（將空行轉為 </p><p>）
+    .replace(/\n\n/g, '</p><p>')
     // 標題
     .replace(/^# (.+)$/gm, '<h1>$1</h1>')
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
     // 加粗
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     // 斜體
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     // 列表
-    .replace(/^(\d+)\. (.+)$/gm, '<p style="margin-left: 20px;">$1. $2</p>')
-    .replace(/^- (.+)$/gm, '<p style="margin-left: 20px;">• $1</p>');
+    .replace(/^(\d+)\. (.+)$/gm, '<p style="margin-left: 20px; margin-bottom: 8px;">$1. $2</p>')
+    .replace(/^- (.+)$/gm, '<p style="margin-left: 20px; margin-bottom: 8px;">• $1</p>');
   
-  // 添加分頁標記（每 2000 字元）
-  const pageSize = 2000;
-  const pages = [];
-  for (let i = 0; i < html.length; i += pageSize) {
-    pages.push(html.substr(i, pageSize));
-  }
+  // 包裝在 p 標籤中
+  html = '<p>' + html + '</p>';
   
   // 創建完整的 HTML 結構
   return `<!DOCTYPE html>
