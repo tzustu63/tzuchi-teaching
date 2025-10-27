@@ -222,8 +222,14 @@ function initializeApp() {
   document
     .getElementById("confirm-objectives")
     .addEventListener("click", async () => {
-      await generateStrategies();
-      proceedToStep(4);
+      // 顯示生成中狀態
+      setGeneratingState("confirm-objectives", true, "下一步：生成中...");
+      try {
+        await generateStrategies();
+        proceedToStep(4);
+      } finally {
+        setGeneratingState("confirm-objectives", false, currentLanguage === "en" ? "Next: Generate Teaching Strategies" : "下一步：生成教學策略");
+      }
     });
   document
     .getElementById("regenerate-objectives")
@@ -236,8 +242,14 @@ function initializeApp() {
   document
     .getElementById("confirm-strategies")
     .addEventListener("click", async () => {
-      await generateFlow();
-      proceedToStep(5);
+      // 顯示生成中狀態
+      setGeneratingState("confirm-strategies", true, "下一步：生成中...");
+      try {
+        await generateFlow();
+        proceedToStep(5);
+      } finally {
+        setGeneratingState("confirm-strategies", false, currentLanguage === "en" ? "Next: Generate Teaching Flow" : "下一步：生成教學流程");
+      }
     });
   document
     .getElementById("regenerate-strategies")
@@ -427,7 +439,7 @@ async function generateRationale() {
     // 準備發送給後端的數據
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
+      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
 
     const requestData = {
       title: courseData.title,
@@ -603,7 +615,7 @@ async function generateObjectives() {
     // 呼叫後端 API 生成學習目標
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
+      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-objectives`,
       {
@@ -667,7 +679,7 @@ async function generateStrategies() {
 
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
+      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-strategies`,
       {
@@ -723,7 +735,7 @@ async function generateFlow() {
 
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
+      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
     const response = await fetch(`${API_BASE_URL}/courses/generate-flow`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -958,6 +970,24 @@ async function downloadAll() {
   alert("下載功能待實作");
 }
 
+// 設定按鈕生成中狀態
+function setGeneratingState(buttonId, isGenerating, text) {
+  const button = document.getElementById(buttonId);
+  if (!button) return;
+  
+  if (isGenerating) {
+    button.disabled = true;
+    button.textContent = text || "生成中...";
+    button.style.opacity = "0.6";
+    button.style.cursor = "not-allowed";
+  } else {
+    button.disabled = false;
+    button.textContent = text;
+    button.style.opacity = "1";
+    button.style.cursor = "pointer";
+  }
+}
+
 async function generateWorksheets() {
   const worksheetContent = document.getElementById("worksheet-content");
 
@@ -1000,7 +1030,7 @@ async function generateWorksheets() {
     const aiModel = localStorage.getItem("ai_model") || "openai";
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
+      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
 
     // 準備請求資料
     const requestData = {
@@ -2014,7 +2044,7 @@ async function saveCoursePlan() {
       teaching_flow: courseData.teaching_flow,
       worksheet: courseData.worksheet,
       ai_model: localStorage.getItem("selectedAiModel") || "openai",
-      ai_submodel: localStorage.getItem("selectedAiSubmodel") || "gpt-4o",
+      ai_submodel: localStorage.getItem("selectedAiSubmodel") || "gpt-4o-mini",
       language: localStorage.getItem("currentLanguage") || "zh",
       gamma_url: localStorage.getItem("gammaUrl") || null,
     };
