@@ -9,13 +9,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# 優先使用 PostgreSQL，沒有則使用 SQLite
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./course_planner.db")
 
 # 創建資料庫引擎
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-)
+if "postgresql" in DATABASE_URL.lower():
+    # PostgreSQL 連接
+    engine = create_engine(DATABASE_URL)
+else:
+    # SQLite 連接
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False}
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

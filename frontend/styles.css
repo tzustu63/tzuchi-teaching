@@ -637,3 +637,92 @@ footer a:hover {
   border-radius: 8px;
   white-space: pre-line;
 }
+
+/* ==================== 歷史記錄頁面樣式 ==================== */
+
+.history-list {
+  margin: 30px 0;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.history-item {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  background: #e9ecef;
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.history-item h3 {
+  margin: 0 0 10px 0;
+  color: #212529;
+  font-size: 1.2em;
+}
+
+.history-meta {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.history-meta span {
+  color: #6c757d;
+  font-size: 0.9em;
+}
+
+.history-date {
+  color: #868e96;
+  font-size: 0.85em;
+  margin-top: 10px;
+}
+
+/* 課程計劃詳情頁面 */
+.plan-detail-content {
+  margin-top: 30px;
+}
+
+.plan-detail-section {
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.plan-detail-section:last-child {
+  border-bottom: none;
+}
+
+.plan-detail-section h3 {
+  color: #212529;
+  margin-bottom: 20px;
+  font-size: 1.3em;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #3b82f6;
+}
+
+.plan-detail-section p {
+  margin: 10px 0;
+  color: #495057;
+}
+
+.plan-detail-section .generated-content {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+}

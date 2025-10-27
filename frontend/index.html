@@ -36,6 +36,10 @@
 
       <!-- 步驟列表 -->
       <nav class="steps-nav">
+        <div class="step-item" data-step="history" id="nav-history">
+          <span class="step-number">📚</span>
+          <span class="step-label">歷史記錄</span>
+        </div>
         <div class="step-item" data-step="1" id="nav-step-1">
           <span class="step-number">1</span>
           <span class="step-label">基本資訊</span>
@@ -178,6 +182,20 @@
       </div>
 
       <div class="container">
+        <!-- 歷史記錄頁面 -->
+        <section id="history-page" class="card" style="display: none;">
+          <h2>📚 課程計劃歷史記錄</h2>
+          <div id="history-list" class="history-list"></div>
+        </section>
+
+        <!-- 課程計劃詳情頁面 -->
+        <section id="plan-detail-page" class="card" style="display: none;">
+          <h2 id="detail-title">課程計劃詳情</h2>
+          <button id="back-to-history" class="btn btn-secondary" onclick="goBackToHistory()">← 返回歷史記錄</button>
+          
+          <div id="detail-content" class="plan-detail-content"></div>
+        </section>
+
         <!-- 歡迎資訊 -->
         <section id="api-key-section" class="card settings-card">
           <h2>👋 歡迎使用課程計劃生成器</h2>

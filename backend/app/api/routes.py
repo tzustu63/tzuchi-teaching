@@ -750,3 +750,143 @@ async def generate_worksheet(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"生成學習單失敗: {str(e)}")
+
+
+# ==================== 課程計劃管理 ====================
+
+@router.post("/course-plans/save")
+async def save_course_plan(
+    request_data: Dict[str, Any],
+    db: Session = Depends(get_db)
+):
+    """保存課程計劃"""
+    try:
+        course_plan = CoursePlan(
+            title=request_data.get("title"),
+            grade=request_data.get("grade"),
+            duration=request_data.get("duration"),
+            student_count=request_data.get("student_count"),
+            classroom_equipment=request_data.get("classroom_equipment"),
+            rationale=request_data.get("rationale"),
+            objectives=request_data.get("objectives"),
+            strategies=request_data.get("strategies"),
+            teaching_flow=request_data.get("teaching_flow"),
+            worksheet=request_data.get("worksheet"),
+            ai_model=request_data.get("ai_model"),
+            ai_submodel=request_data.get("ai_submodel"),
+            language=request_data.get("language", "zh"),
+            uploaded_file_content=request_data.get("upload_content"),
+            gamma_url=request_data.get("gamma_url"),
+            status="completed"
+        )
+        
+        db.add(course_plan)
+        db.commit()
+        db.refresh(course_plan)
+        
+        return {
+            "status": "success",
+            "course_plan_id": course_plan.id,
+            "message": "課程計劃已保存"
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"保存失敗: {str(e)}")
+
+
+@router.get("/course-plans")
+async def list_course_plans(
+    skip: int = 0,
+    limit: int = 20,
+    db: Session = Depends(get_db)
+):
+    """列出所有課程計劃"""
+    try:
+        course_plans = db.query(CoursePlan).order_by(CoursePlan.created_at.desc()).offset(skip).limit(limit).all()
+        
+        result = []
+        for plan in course_plans:
+            result.append({
+                "id": plan.id,
+                "title": plan.title,
+                "grade": plan.grade,
+                "duration": plan.duration,
+                "created_at": plan.created_at.isoformat() if plan.created_at else None,
+                "updated_at": plan.updated_at.isoformat() if plan.updated_at else None,
+                "status": plan.status
+            })
+        
+        return {
+            "status": "success",
+            "total": len(result),
+            "course_plans": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"查詢失敗: {str(e)}")
+
+
+@router.get("/course-plans/{plan_id}")
+async def get_course_plan(
+    plan_id: int,
+    db: Session = Depends(get_db)
+):
+    """獲取課程計劃詳情"""
+    try:
+        course_plan = db.query(CoursePlan).filter(CoursePlan.id == plan_id).first()
+        
+        if not course_plan:
+            raise HTTPException(status_code=404, detail="課程計劃不存在")
+        
+        return {
+            "status": "success",
+            "course_plan": {
+                "id": course_plan.id,
+                "title": course_plan.title,
+                "grade": course_plan.grade,
+                "duration": course_plan.duration,
+                "student_count": course_plan.student_count,
+                "classroom_equipment": course_plan.classroom_equipment,
+                "rationale": course_plan.rationale,
+                "objectives": course_plan.objectives,
+                "strategies": course_plan.strategies,
+                "teaching_flow": course_plan.teaching_flow,
+                "worksheet": course_plan.worksheet,
+                "ai_model": course_plan.ai_model,
+                "ai_submodel": course_plan.ai_submodel,
+                "language": course_plan.language,
+                "gamma_url": course_plan.gamma_url,
+                "created_at": course_plan.created_at.isoformat() if course_plan.created_at else None,
+                "updated_at": course_plan.updated_at.isoformat() if course_plan.updated_at else None,
+                "status": course_plan.status
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"查詢失敗: {str(e)}")
+
+
+@router.delete("/course-plans/{plan_id}")
+async def delete_course_plan(
+    plan_id: int,
+    db: Session = Depends(get_db)
+):
+    """刪除課程計劃"""
+    try:
+        course_plan = db.query(CoursePlan).filter(CoursePlan.id == plan_id).first()
+        
+        if not course_plan:
+            raise HTTPException(status_code=404, detail="課程計劃不存在")
+        
+        db.delete(course_plan)
+        db.commit()
+        
+        return {
+            "status": "success",
+            "message": "課程計劃已刪除"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"刪除失敗: {str(e)}")

@@ -37,16 +37,21 @@ class CoursePlan(Base):
     classroom_equipment = Column(Text, comment="教室設備")
     
     # 各階段生成內容
-    basic_info = Column(Text, comment="基本資訊（JSON）")
     rationale = Column(Text, comment="教學理念")
-    objectives = Column(Text, comment="學習目標（JSON）")
-    strategies = Column(Text, comment="教學策略（JSON）")
-    teaching_flow = Column(Text, comment="教學流程（JSON）")
+    objectives = Column(Text, comment="學習目標")
+    strategies = Column(Text, comment="教學策略")
+    teaching_flow = Column(Text, comment="教學流程")
+    worksheet = Column(Text, comment="學習單")
+    
+    # 生成設定
+    ai_model = Column(String(50), comment="使用的 AI 模型")
+    ai_submodel = Column(String(100), comment="使用的子模型")
+    language = Column(String(10), default="zh", comment="生成語言")
     
     # 檔案路徑
     uploaded_file_path = Column(String(500), comment="上傳的教案檔案路徑")
-    ppt_file_path = Column(String(500), comment="生成的 PPT 檔案路徑")
-    worksheet_file_path = Column(String(500), comment="生成的學習單檔案路徑")
+    uploaded_file_content = Column(Text, comment="上傳檔案的文字內容")
+    gamma_url = Column(String(500), comment="Gamma PPT URL")
     
     status = Column(String(50), default="draft", comment="狀態: draft, generating, completed")
     created_at = Column(DateTime, server_default=func.now())

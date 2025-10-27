@@ -509,6 +509,14 @@ ${courseData.title} 是學生理解 ${courseData.grade} 學生需要掌握的核
 }
 
 function initializeSidebar() {
+  // 歷史記錄點擊事件
+  const historyNavItem = document.getElementById("nav-history");
+  if (historyNavItem) {
+    historyNavItem.addEventListener("click", () => {
+      showHistoryPage();
+    });
+  }
+  
   // 為每個側邊欄項目添加點擊事件
   for (let i = 1; i <= 7; i++) {
     const navItem = document.getElementById(`nav-step-${i}`);
@@ -1522,6 +1530,12 @@ function applyLanguage(lang) {
     promptEditBtn.textContent = `📝 ${t.promptEdit}`;
   }
 
+  // 更新歷史記錄標籤
+  const historyLabel = document.querySelector("#nav-history .step-label");
+  if (historyLabel) {
+    historyLabel.textContent = lang === "zh" ? "歷史記錄" : "History";
+  }
+  
   // 更新步驟標籤
   document.querySelector("#nav-step-1 .step-label").textContent = t.step1;
   document.querySelector("#nav-step-2 .step-label").textContent = t.step2;
@@ -1799,5 +1813,209 @@ function togglePromptSettings() {
     promptEditor.style.display === "none" ? "block" : "none";
   if (promptEditor.style.display === "block") {
     loadPromptForStep(1);
+  }
+}
+
+// ==================== 歷史記錄功能 ====================
+
+// 顯示歷史記錄頁面
+async function showHistoryPage() {
+  // 隱藏所有步驟
+  document.querySelectorAll("section[id^='step']").forEach((section) => {
+    section.style.display = "none";
+  });
+  
+  // 隱藏歡迎資訊
+  const apiKeySection = document.getElementById("api-key-section");
+  if (apiKeySection) {
+    apiKeySection.style.display = "none";
+  }
+  
+  // 顯示歷史記錄頁面
+  const historyPage = document.getElementById("history-page");
+  const planDetailPage = document.getElementById("plan-detail-page");
+  if (historyPage) historyPage.style.display = "block";
+  if (planDetailPage) planDetailPage.style.display = "none";
+  
+  // 更新側邊欄高亮
+  document.querySelectorAll(".step-item").forEach((item) => {
+    item.classList.remove("active");
+  });
+  const historyNav = document.getElementById("nav-history");
+  if (historyNav) historyNav.classList.add("active");
+  
+  // 載入歷史記錄列表
+  await loadHistoryList();
+}
+
+// 載入歷史記錄列表
+async function loadHistoryList() {
+  try {
+    const response = await fetch("/api/course-plans");
+    const data = await response.json();
+    
+    const historyList = document.getElementById("history-list");
+    const currentLang = localStorage.getItem("currentLanguage") || "zh";
+    
+    if (!data.course_plans || data.course_plans.length === 0) {
+      historyList.innerHTML = `<p style="text-align: center; color: #666; padding: 40px;">
+        ${currentLang === "zh" ? "目前尚無課程計劃記錄" : "No course plans yet"}
+      </p>`;
+      return;
+    }
+    
+    let html = '<div class="history-grid">';
+    data.course_plans.forEach((plan) => {
+      const date = plan.created_at ? new Date(plan.created_at).toLocaleString(currentLang === "zh" ? "zh-TW" : "en-US") : "";
+      html += `
+        <div class="history-item" onclick="viewPlanDetail(${plan.id})">
+          <h3>${plan.title || "無標題"}</h3>
+          <div class="history-meta">
+            <span>${currentLang === "zh" ? "年級" : "Grade"}: ${plan.grade || "-"}</span>
+            <span>${currentLang === "zh" ? "時長" : "Duration"}: ${plan.duration || "-"} ${currentLang === "zh" ? "分鐘" : "mins"}</span>
+          </div>
+          <div class="history-date">${date}</div>
+        </div>
+      `;
+    });
+    html += "</div>";
+    historyList.innerHTML = html;
+    
+  } catch (error) {
+    console.error("載入歷史記錄失敗:", error);
+    const currentLang = localStorage.getItem("currentLanguage") || "zh";
+    document.getElementById("history-list").innerHTML = `
+      <p style="text-align: center; color: #d32f2f; padding: 40px;">
+        ${currentLang === "zh" ? "載入失敗，請重試" : "Failed to load history"}
+      </p>
+    `;
+  }
+}
+
+// 查看課程計劃詳情
+async function viewPlanDetail(planId) {
+  try {
+    const response = await fetch(`/api/course-plans/${planId}`);
+    const data = await response.json();
+    
+    const plan = data.course_plan;
+    const currentLang = localStorage.getItem("currentLanguage") || "zh";
+    
+    // 顯示詳情頁面
+    const historyPage = document.getElementById("history-page");
+    const planDetailPage = document.getElementById("plan-detail-page");
+    const detailTitle = document.getElementById("detail-title");
+    const detailContent = document.getElementById("detail-content");
+    
+    if (historyPage) historyPage.style.display = "none";
+    if (planDetailPage) planDetailPage.style.display = "block";
+    if (detailTitle) detailTitle.textContent = plan.title || "課程計劃詳情";
+    
+    if (detailContent) {
+      const lang = plan.language === "en" ? "en" : "zh";
+      let html = `
+        <div class="plan-detail-section">
+          <h3>${lang === "zh" ? "基本資訊" : "Basic Information"}</h3>
+          <p><strong>${lang === "zh" ? "年級" : "Grade"}:</strong> ${plan.grade || "-"}</p>
+          <p><strong>${lang === "zh" ? "時長" : "Duration"}:</strong> ${plan.duration || "-"} ${lang === "zh" ? "分鐘" : "minutes"}</p>
+          <p><strong>${lang === "zh" ? "學生人數" : "Student Count"}:</strong> ${plan.student_count || "-"}</p>
+          <p><strong>${lang === "zh" ? "教室設備" : "Classroom Equipment"}:</strong> ${plan.classroom_equipment || "-"}</p>
+        </div>
+        
+        <div class="plan-detail-section">
+          <h3>${lang === "zh" ? "教學理念" : "Teaching Rationale"}</h3>
+          <div class="generated-content">${plan.rationale || "-"}</div>
+        </div>
+        
+        <div class="plan-detail-section">
+          <h3>${lang === "zh" ? "學習目標" : "Learning Objectives"}</h3>
+          <div class="generated-content">${plan.objectives || "-"}</div>
+        </div>
+        
+        <div class="plan-detail-section">
+          <h3>${lang === "zh" ? "教學策略" : "Teaching Strategies"}</h3>
+          <div class="generated-content">${plan.strategies || "-"}</div>
+        </div>
+        
+        <div class="plan-detail-section">
+          <h3>${lang === "zh" ? "教學流程" : "Teaching Flow"}</h3>
+          <div class="generated-content">${plan.teaching_flow || "-"}</div>
+        </div>
+        
+        <div class="plan-detail-section">
+          <h3>${lang === "zh" ? "學習單" : "Worksheet"}</h3>
+          <div class="generated-content">${plan.worksheet || "-"}</div>
+        </div>
+      `;
+      
+      if (plan.gamma_url) {
+        html += `
+          <div class="plan-detail-section">
+            <h3>${lang === "zh" ? "PPT 簡報" : "PPT Presentation"}</h3>
+            <a href="${plan.gamma_url}" target="_blank" class="btn btn-primary" style="display: inline-block; margin-top: 10px;">
+              ${lang === "zh" ? "查看 Gamma 簡報" : "View Gamma Presentation"}
+            </a>
+          </div>
+        `;
+      }
+      
+      detailContent.innerHTML = html;
+    }
+    
+  } catch (error) {
+    console.error("載入詳情失敗:", error);
+    const currentLang = localStorage.getItem("currentLanguage") || "zh";
+    alert(currentLang === "zh" ? "載入詳情失敗" : "Failed to load details");
+  }
+}
+
+// 返回歷史記錄
+function goBackToHistory() {
+  showHistoryPage();
+}
+
+// 保存課程計劃
+async function saveCoursePlan() {
+  try {
+    const saveData = {
+      title: document.getElementById("title").value,
+      grade: document.getElementById("grade").value,
+      duration: parseInt(document.getElementById("duration").value),
+      student_count: parseInt(document.getElementById("student-count").value),
+      classroom_equipment: document.getElementById("equipment").value,
+      rationale: courseData.rationale,
+      objectives: courseData.objectives,
+      strategies: courseData.strategies,
+      teaching_flow: courseData.teaching_flow,
+      worksheet: courseData.worksheet,
+      ai_model: localStorage.getItem("selectedAiModel") || "openai",
+      ai_submodel: localStorage.getItem("selectedAiSubmodel") || "gpt-4o",
+      language: localStorage.getItem("currentLanguage") || "zh",
+      gamma_url: localStorage.getItem("gammaUrl") || null
+    };
+    
+    const response = await fetch("/api/course-plans/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(saveData),
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      const currentLang = localStorage.getItem("currentLanguage") || "zh";
+      alert(currentLang === "zh" ? "課程計劃已保存" : "Course plan saved");
+      // 重新載入歷史記錄
+      await loadHistoryList();
+    } else {
+      throw new Error(result.detail || "保存失敗");
+    }
+    
+  } catch (error) {
+    console.error("保存失敗:", error);
+    const currentLang = localStorage.getItem("currentLanguage") || "zh";
+    alert((currentLang === "zh" ? "保存失敗：" : "Save failed: ") + error.message);
   }
 }
