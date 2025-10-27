@@ -842,17 +842,65 @@ async function downloadAll() {
 
 async function generateWorksheets() {
   const worksheetContent = document.getElementById("worksheet-content");
+  
+  // 總是先清除舊內容並顯示載入訊息
+  worksheetContent.textContent = "⌛ 正在生成學習單...";
+  worksheetContent.style.color = "#4a90e2";
+  worksheetContent.style.fontWeight = "bold";
+  worksheetContent.style.fontSize = "1.2em";
+  worksheetContent.style.textAlign = "center";
+  worksheetContent.style.padding = "20px";
+  worksheetContent.style.backgroundColor = "#e6f7ff";
+  worksheetContent.style.borderRadius = "8px";
+
+  // 如果已有內容，直接顯示並返回
   if (courseData.worksheet) {
     worksheetContent.textContent = courseData.worksheet;
+    // 重置樣式
+    worksheetContent.style.color = "";
+    worksheetContent.style.fontWeight = "";
+    worksheetContent.style.fontSize = "";
+    worksheetContent.style.textAlign = "";
+    worksheetContent.style.padding = "";
+    worksheetContent.style.backgroundColor = "";
+    worksheetContent.style.borderRadius = "";
     return;
   }
 
+  // 重置樣式的輔助函數
+  const resetStyles = () => {
+    worksheetContent.style.color = "";
+    worksheetContent.style.fontWeight = "";
+    worksheetContent.style.fontSize = "";
+    worksheetContent.style.textAlign = "";
+    worksheetContent.style.padding = "";
+    worksheetContent.style.backgroundColor = "";
+    worksheetContent.style.borderRadius = "";
+  };
+
   try {
-    worksheetContent.textContent = "⌛ 正在生成學習單...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
       (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+    
+    // 準備請求資料
+    const requestData = {
+      title: courseData.title || courseData.basic_info?.title,
+      grade: courseData.grade || courseData.basic_info?.grade,
+      duration: courseData.duration || courseData.basic_info?.duration,
+      student_count: courseData.student_count || courseData.basic_info?.student_count,
+      rationale: courseData.rationale,
+      objectives: courseData.objectives,
+      teaching_flow: courseData.teaching_flow,
+      ai_model: aiModel,
+      ai_submodel: aiSubmodel,
+    };
+
+    // 前端驗證：檢查必要資料
+    if (!requestData.title || !requestData.rationale || !requestData.objectives || !requestData.teaching_flow) {
+      throw new Error("生成學習單所需的基本資訊不完整。請完成所有前置步驟。");
+    }
 
     const response = await fetch(`${API_BASE_URL}/courses/generate-worksheet`, {
       method: "POST",
@@ -874,12 +922,20 @@ async function generateWorksheets() {
       worksheetContent.textContent = data.worksheet;
       courseData.worksheet = data.worksheet;
       console.log(`📊 學習單內容長度: ${data.worksheet?.length || 0} 字元`);
+      resetStyles();
     } else {
       throw new Error(data.detail || "生成失敗");
     }
   } catch (error) {
     console.error("生成學習單失敗:", error);
     worksheetContent.textContent = `❌ 生成失敗：${error.message}`;
+    worksheetContent.style.color = "#d32f2f";
+    worksheetContent.style.fontWeight = "bold";
+    worksheetContent.style.fontSize = "1.2em";
+    worksheetContent.style.textAlign = "center";
+    worksheetContent.style.padding = "20px";
+    worksheetContent.style.backgroundColor = "#ffebee";
+    worksheetContent.style.borderRadius = "8px";
   }
 }
 
@@ -1072,7 +1128,7 @@ function editContent(type) {
   }
 
   const currentContent = contentElement.textContent;
-  
+
   // 創建編輯彈窗
   const modal = document.createElement("div");
   modal.style.cssText = `
@@ -1087,7 +1143,7 @@ function editContent(type) {
     align-items: center;
     z-index: 10000;
   `;
-  
+
   modal.innerHTML = `
     <div style="
       background: white;
@@ -1115,36 +1171,36 @@ function editContent(type) {
       </div>
     </div>
   `;
-  
+
   document.body.appendChild(modal);
-  
+
   // 取消按鈕
   modal.querySelector("#cancel-edit").addEventListener("click", () => {
     document.body.removeChild(modal);
   });
-  
+
   // 儲存按鈕
   modal.querySelector("#save-edit").addEventListener("click", () => {
     const newContent = modal.querySelector("#edit-textarea").value;
     contentElement.textContent = newContent;
-    
+
     // 更新 courseData
     const keys = {
       rationale: "rationale",
       objectives: "objectives",
       strategies: "strategies",
       flow: "teaching_flow",
-      worksheet: "worksheet"
+      worksheet: "worksheet",
     };
-    
+
     if (keys[type]) {
       courseData[keys[type]] = newContent;
     }
-    
+
     document.body.removeChild(modal);
     alert("內容已更新！");
   });
-  
+
   // ESC 鍵關閉
   const escapeHandler = (e) => {
     if (e.key === "Escape") {
@@ -1153,7 +1209,7 @@ function editContent(type) {
     }
   };
   document.addEventListener("keydown", escapeHandler);
-  
+
   // 點擊背景關閉
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
