@@ -208,8 +208,14 @@ function initializeApp() {
   document
     .getElementById("confirm-rationale")
     .addEventListener("click", async () => {
-      await generateObjectives();
-      proceedToStep(3);
+      // 顯示生成中狀態
+      setGeneratingState("confirm-rationale", true, "下一步：生成中...");
+      try {
+        await generateObjectives();
+        proceedToStep(3);
+      } finally {
+        setGeneratingState("confirm-rationale", false, currentLanguage === "en" ? "Next: Generate Learning Objectives" : "下一步：生成學習目標");
+      }
     });
   document
     .getElementById("regenerate-rationale")
@@ -228,7 +234,13 @@ function initializeApp() {
         await generateStrategies();
         proceedToStep(4);
       } finally {
-        setGeneratingState("confirm-objectives", false, currentLanguage === "en" ? "Next: Generate Teaching Strategies" : "下一步：生成教學策略");
+        setGeneratingState(
+          "confirm-objectives",
+          false,
+          currentLanguage === "en"
+            ? "Next: Generate Teaching Strategies"
+            : "下一步：生成教學策略"
+        );
       }
     });
   document
@@ -248,7 +260,13 @@ function initializeApp() {
         await generateFlow();
         proceedToStep(5);
       } finally {
-        setGeneratingState("confirm-strategies", false, currentLanguage === "en" ? "Next: Generate Teaching Flow" : "下一步：生成教學流程");
+        setGeneratingState(
+          "confirm-strategies",
+          false,
+          currentLanguage === "en"
+            ? "Next: Generate Teaching Flow"
+            : "下一步：生成教學流程"
+        );
       }
     });
   document
@@ -974,7 +992,7 @@ async function downloadAll() {
 function setGeneratingState(buttonId, isGenerating, text) {
   const button = document.getElementById(buttonId);
   if (!button) return;
-  
+
   if (isGenerating) {
     button.disabled = true;
     button.textContent = text || "生成中...";
