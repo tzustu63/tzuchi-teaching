@@ -25,7 +25,22 @@ const translations = {
     features: "功能特色",
     start: "開始使用",
     currentLang: "中文",
-    switchTo: "English"
+    switchTo: "English",
+    aiModel: "AI 模型",
+    subModel: "子模型",
+    promptEdit: "Prompt 編輯",
+    step1Title: "步驟 1: 基本課程資訊",
+    step2Title: "步驟 2: 教學理念",
+    step3Title: "步驟 3: 學習目標",
+    step4Title: "步驟 4: 教學策略",
+    step5Title: "步驟 5: 教學流程",
+    step6Title: "步驟 6: 教學材料",
+    step7Title: "步驟 7: 製作學習單",
+    nextStep: "下一步：",
+    edit: "編輯",
+    regenerate: "重新生成",
+    download: "下載學習單",
+    generateMaterials: "生成教學材料"
   },
   en: {
     title: "Lesson Plan Generator",
@@ -41,8 +56,23 @@ const translations = {
     features: "Features",
     start: "Start Using",
     currentLang: "English",
-    switchTo: "中文"
-  }
+    switchTo: "中文",
+    aiModel: "AI Model",
+    subModel: "Sub Model",
+    promptEdit: "Prompt Editor",
+    step1Title: "Step 1: Basic Course Information",
+    step2Title: "Step 2: Teaching Philosophy",
+    step3Title: "Step 3: Learning Objectives",
+    step4Title: "Step 4: Teaching Strategies",
+    step5Title: "Step 5: Teaching Flow",
+    step6Title: "Step 6: Teaching Materials",
+    step7Title: "Step 7: Create Worksheets",
+    nextStep: "Next Step: ",
+    edit: "Edit",
+    regenerate: "Regenerate",
+    download: "Download Worksheet",
+    generateMaterials: "Generate Teaching Materials"
+  },
 };
 
 // DOM 載入後初始化
@@ -934,6 +964,7 @@ async function generateWorksheets() {
       teaching_flow: courseData.teaching_flow,
       ai_model: aiModel,
       ai_submodel: aiSubmodel,
+      language: currentLanguage,  // 添加語言參數
     };
 
     // 前端驗證：檢查必要資料
@@ -1415,48 +1446,101 @@ function toggleLanguage() {
 
 function applyLanguage(lang) {
   const t = translations[lang];
-  
+
   // 更新語言切換按鈕
-  document.getElementById("current-lang-text").textContent = t.currentLang;
-  document.getElementById("switch-to-text").textContent = " / " + t.switchTo;
-  
+  const currentLangText = document.getElementById("current-lang-text");
+  const switchToText = document.getElementById("switch-to-text");
+  if (currentLangText) {
+    currentLangText.textContent = t.currentLang;
+  }
+  if (switchToText) {
+    switchToText.textContent = " / " + t.switchTo;
+  }
+
   // 更新標題
   const titleElement = document.querySelector(".sidebar-header h1");
   if (titleElement) {
     titleElement.textContent = `📚 ${t.title}`;
   }
-  
+
   // 更新副標題
   const subtitleElement = document.querySelector(".subtitle");
   if (subtitleElement) {
     subtitleElement.textContent = t.subtitle;
   }
+
+  // 更新側邊欄標籤
+  const aiModelLabels = document.querySelectorAll('h3');
+  if (aiModelLabels[0]) aiModelLabels[0].textContent = `🤖 ${t.aiModel}`;
+  if (aiModelLabels[1]) aiModelLabels[1].textContent = `📡 ${t.subModel}`;
   
+  // 更新 Prompt 編輯按鈕
+  const promptEditBtn = document.getElementById("toggle-prompt-editor");
+  if (promptEditBtn) {
+    promptEditBtn.textContent = `📝 ${t.promptEdit}`;
+  }
+
   // 更新步驟標籤
-  document.querySelector('#nav-step-1 .step-label').textContent = t.step1;
-  document.querySelector('#nav-step-2 .step-label').textContent = t.step2;
-  document.querySelector('#nav-step-3 .step-label').textContent = t.step3;
-  document.querySelector('#nav-step-4 .step-label').textContent = t.step4;
-  document.querySelector('#nav-step-5 .step-label').textContent = t.step5;
-  document.querySelector('#nav-step-6 .step-label').textContent = t.step6;
-  document.querySelector('#nav-step-7 .step-label').textContent = t.step7;
+  document.querySelector("#nav-step-1 .step-label").textContent = t.step1;
+  document.querySelector("#nav-step-2 .step-label").textContent = t.step2;
+  document.querySelector("#nav-step-3 .step-label").textContent = t.step3;
+  document.querySelector("#nav-step-4 .step-label").textContent = t.step4;
+  document.querySelector("#nav-step-5 .step-label").textContent = t.step5;
+  document.querySelector("#nav-step-6 .step-label").textContent = t.step6;
+  document.querySelector("#nav-step-7 .step-label").textContent = t.step7;
+
+  // 更新步驟標題
+  const step1H2 = document.querySelector("#step1 h2");
+  const step2H2 = document.querySelector("#step2 h2");
+  const step3H2 = document.querySelector("#step3 h2");
+  const step4H2 = document.querySelector("#step4 h2");
+  const step5H2 = document.querySelector("#step5 h2");
+  const step6H2 = document.querySelector("#step6 h2");
+  const step7H2 = document.querySelector("#step7 h2");
   
+  if (step1H2) step1H2.textContent = t.step1Title;
+  if (step2H2) step2H2.textContent = t.step2Title;
+  if (step3H2) step3H2.textContent = t.step3Title;
+  if (step4H2) step4H2.textContent = t.step4Title;
+  if (step5H2) step5H2.textContent = t.step5Title;
+  if (step6H2) step6H2.textContent = t.step6Title;
+  if (step7H2) step7H2.textContent = t.step7Title;
+
+  // 更新按鈕文字
+  const buttonsToUpdate = [
+    { id: "edit-rationale", text: t.edit },
+    { id: "regenerate-rationale", text: t.regenerate },
+    { id: "edit-objectives", text: t.edit },
+    { id: "regenerate-objectives", text: t.regenerate },
+    { id: "edit-strategies", text: t.edit },
+    { id: "regenerate-strategies", text: t.regenerate },
+    { id: "edit-flow", text: t.edit },
+    { id: "regenerate-flow", text: t.regenerate },
+    { id: "generate-worksheets", text: t.nextStep + t.generateMaterials },
+    { id: "edit-worksheet", text: t.edit },
+    { id: "regenerate-worksheet", text: t.regenerate },
+    { id: "download-worksheet", text: t.download },
+    { id: "download-all", text: "下載所有材料" },
+    { id: "start-using", text: `✅ ${t.start}` },
+  ];
+  
+  buttonsToUpdate.forEach(({ id, text }) => {
+    const btn = document.getElementById(id);
+    if (btn && text) {
+      btn.textContent = text;
+    }
+  });
+
   // 更新歡迎標題
-  const welcomeTitle = document.querySelector('#api-key-section h2');
+  const welcomeTitle = document.querySelector("#api-key-section h2");
   if (welcomeTitle) {
     welcomeTitle.textContent = `👋 ${t.welcome}`;
   }
-  
+
   // 更新功能特色
-  const featuresTitle = document.querySelector('#api-key-section h3');
+  const featuresTitle = document.querySelector("#api-key-section h3");
   if (featuresTitle) {
     featuresTitle.textContent = `✨ ${t.features}`;
-  }
-  
-  // 更新開始按鈕
-  const startBtn = document.getElementById("start-using");
-  if (startBtn) {
-    startBtn.textContent = `✅ ${t.start}`;
   }
 }
 
