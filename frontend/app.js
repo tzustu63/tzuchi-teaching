@@ -339,7 +339,7 @@ async function generateRationale() {
     // 加入子模型選擇（如果沒有選擇則使用預設）
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
     requestData.ai_submodel = aiSubmodel;
 
     // 呼叫後端 API 生成教學理念
@@ -494,7 +494,7 @@ async function generateObjectives() {
     // 呼叫後端 API 生成學習目標
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-objectives`,
       {
@@ -557,7 +557,7 @@ async function generateStrategies() {
 
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-strategies`,
       {
@@ -612,7 +612,7 @@ async function generateFlow() {
 
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
     const response = await fetch(`${API_BASE_URL}/courses/generate-flow`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -882,7 +882,7 @@ async function generateWorksheets() {
     const aiModel = localStorage.getItem("ai_model") || "openai";
     const aiSubmodel =
       localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
 
     // 準備請求資料
     const requestData = {

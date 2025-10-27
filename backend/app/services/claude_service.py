@@ -14,10 +14,10 @@ class ClaudeService:
         """初始化 Claude 客戶端"""
         self.client = anthropic.Anthropic(api_key=api_key)
     
-    def generate_content(
-        self,
-        prompt: str,
-        model: str = "claude-3-5-sonnet-20241022",  # Claude 3.5 Sonnet (最新版本)
+        def generate_content(
+            self,
+            prompt: str,
+            model: str = "claude-sonnet-4-5-20250929",  # Claude Sonnet 4.5 (最新版本)
         max_tokens: Optional[int] = None,
         temperature: float = 0.7
     ) -> str:

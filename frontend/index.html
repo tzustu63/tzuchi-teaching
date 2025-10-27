@@ -90,11 +90,18 @@
 
           <!-- Claude 模型 -->
           <option
+            value="claude-sonnet-4-5-20250929"
+            data-provider="claude"
+            style="display: none"
+          >
+            Claude Sonnet 4.5 (最新)
+          </option>
+          <option
             value="claude-3-5-sonnet-20241022"
             data-provider="claude"
             style="display: none"
           >
-            Claude 3.5 Sonnet (最新)
+            Claude 3.5 Sonnet
           </option>
           <option
             value="claude-3-5-haiku-20241022"
@@ -431,9 +438,15 @@
             <h2>步驟 7: 製作學習單</h2>
             <div id="worksheet-content" class="generated-content"></div>
             <div class="step-actions">
-              <button id="edit-worksheet" class="btn btn-secondary">編輯</button>
-              <button id="regenerate-worksheet" class="btn btn-secondary">重新生成</button>
-              <button id="download-worksheet" class="btn btn-success">下載學習單</button>
+              <button id="edit-worksheet" class="btn btn-secondary">
+                編輯
+              </button>
+              <button id="regenerate-worksheet" class="btn btn-secondary">
+                重新生成
+              </button>
+              <button id="download-worksheet" class="btn btn-success">
+                下載學習單
+              </button>
             </div>
           </section>
 
