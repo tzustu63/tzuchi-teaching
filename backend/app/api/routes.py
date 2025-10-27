@@ -234,12 +234,11 @@ async def generate_rationale(
         )
         print(f"✅ Prompt 組合完成，長度: {len(prompt)} 字元")
         
-        # 調用 AI API
+        # 調用 AI API（使用前端選擇的子模型）
+        ai_submodel = basic_info.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
         print(f"🤖 開始調用 {ai_model} API 生成內容...")
-        if ai_model == "claude":
-            rationale = service.generate_content(prompt, model="claude-sonnet-4-5")
-        else:
-            rationale = service.generate_content(prompt, model="gpt-4o")  # 使用最新的 GPT-4o
+        print(f"📡 使用子模型: {ai_submodel}")
+        rationale = service.generate_content(prompt, model=ai_submodel)
         
         print(f"✅ 內容生成完成！")
         print(f"📊 生成的教學理念長度: {len(rationale)} 字元")
@@ -290,11 +289,10 @@ async def generate_objectives(
             request_data
         )
         
-        # 調用 API
-        if ai_model == "claude":
-            objectives = service.generate_content(prompt, model="claude-sonnet-4-5")
-        else:
-            objectives = service.generate_content(prompt, model="gpt-4o")
+        # 調用 API（使用前端選擇的子模型）
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
+        print(f"📡 使用子模型: {ai_submodel}")
+        objectives = service.generate_content(prompt, model=ai_submodel)
         
         return {
             "status": "success",
@@ -342,11 +340,10 @@ async def generate_strategies(
             request_data
         )
         
-        # 調用 API
-        if ai_model == "claude":
-            strategies = service.generate_content(prompt, model="claude-sonnet-4-5")
-        else:
-            strategies = service.generate_content(prompt, model="gpt-4o")
+        # 調用 API（使用前端選擇的子模型）
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
+        print(f"📡 使用子模型: {ai_submodel}")
+        strategies = service.generate_content(prompt, model=ai_submodel)
         
         return {
             "status": "success",
@@ -394,11 +391,10 @@ async def generate_flow(
             request_data
         )
         
-        # 調用 API
-        if ai_model == "claude":
-            flow = service.generate_content(prompt, model="claude-sonnet-4-5")
-        else:
-            flow = service.generate_content(prompt, model="gpt-4o")
+        # 調用 API（使用前端選擇的子模型）
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
+        print(f"📡 使用子模型: {ai_submodel}")
+        flow = service.generate_content(prompt, model=ai_submodel)
         
         return {
             "status": "success",

@@ -58,6 +58,31 @@
           <option value="openai">OpenAI</option>
           <option value="claude">Claude</option>
         </select>
+        
+        <h3
+          style="
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+            margin-top: 15px;
+            padding: 0 20px;
+          "
+        >
+          📡 子模型
+        </h3>
+        <select id="sidebar-ai-submodel-select" class="sidebar-select">
+          <!-- OpenAI 模型 -->
+          <option value="gpt-4o" data-provider="openai">GPT-4o (最新)</option>
+          <option value="gpt-4-turbo" data-provider="openai">GPT-4 Turbo</option>
+          <option value="gpt-4" data-provider="openai">GPT-4</option>
+          <option value="gpt-3.5-turbo" data-provider="openai">GPT-3.5 Turbo</option>
+          
+          <!-- Claude 模型 -->
+          <option value="claude-sonnet-4-5" data-provider="claude" style="display: none;">Claude Sonnet 4.5 (最新)</option>
+          <option value="claude-sonnet-4" data-provider="claude" style="display: none;">Claude Sonnet 4</option>
+          <option value="claude-3-5-sonnet" data-provider="claude" style="display: none;">Claude 3.5 Sonnet</option>
+          <option value="claude-3-opus" data-provider="claude" style="display: none;">Claude 3 Opus</option>
+        </select>
       </div>
 
       <!-- 設置按鈕 -->

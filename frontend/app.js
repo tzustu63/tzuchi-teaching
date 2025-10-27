@@ -19,25 +19,64 @@ function initializeApp() {
 
   // 初始化側邊欄 AI 模型選擇器
   const sidebarModelSelect = document.getElementById("sidebar-ai-model-select");
+  const sidebarSubmodelSelect = document.getElementById("sidebar-ai-submodel-select");
   const mainModelSelect = document.getElementById("ai-model-select");
   const startUsingBtn = document.getElementById("start-using");
 
-  if (sidebarModelSelect && mainModelSelect) {
-    // 同步兩個選擇器
+  if (sidebarModelSelect && sidebarSubmodelSelect) {
+    // 更新子模型選項
+    const updateSubmodelOptions = (provider) => {
+      const options = sidebarSubmodelSelect.querySelectorAll("option");
+      options.forEach((option) => {
+        const optionProvider = option.getAttribute("data-provider");
+        if (optionProvider === provider) {
+          option.style.display = "";
+        } else {
+          option.style.display = "none";
+        }
+      });
+      
+      // 選取該提供商的第一個模型作為預設
+      const firstVisibleOption = sidebarSubmodelSelect.querySelector(`option[data-provider="${provider}"]:not([style*="display: none"])`);
+      if (firstVisibleOption) {
+        sidebarSubmodelSelect.value = firstVisibleOption.value;
+        localStorage.setItem("ai_submodel", firstVisibleOption.value);
+      }
+    };
+
+    // 當主模型改變時，更新子模型選項
     sidebarModelSelect.addEventListener("change", (e) => {
-      mainModelSelect.value = e.target.value;
-      localStorage.setItem("ai_model", e.target.value);
+      const selectedProvider = e.target.value;
+      updateSubmodelOptions(selectedProvider);
+      localStorage.setItem("ai_model", selectedProvider);
+      
+      // 同步到主選擇器（如果存在）
+      if (mainModelSelect) {
+        mainModelSelect.value = selectedProvider;
+      }
     });
 
-    mainModelSelect.addEventListener("change", (e) => {
-      sidebarModelSelect.value = e.target.value;
-      localStorage.setItem("ai_model", e.target.value);
+    // 當子模型改變時，保存選擇
+    sidebarSubmodelSelect.addEventListener("change", (e) => {
+      localStorage.setItem("ai_submodel", e.target.value);
+      console.log(`📡 已選擇子模型: ${e.target.value}`);
     });
 
     // 載入已儲存的選擇
     const savedModel = localStorage.getItem("ai_model") || "openai";
+    const savedSubmodel = localStorage.getItem("ai_submodel");
+    
     sidebarModelSelect.value = savedModel;
-    mainModelSelect.value = savedModel;
+    updateSubmodelOptions(savedModel);
+    
+    // 如果有保存的子模型，則使用它
+    if (savedSubmodel) {
+      sidebarSubmodelSelect.value = savedSubmodel;
+    }
+    
+    if (mainModelSelect) {
+      mainModelSelect.value = savedModel;
+    }
   }
 
   // 開始使用按鈕
@@ -262,6 +301,10 @@ async function generateRationale() {
 
     console.log("📤 發送給後端的完整數據:", requestData);
 
+    // 加入子模型選擇
+    const aiSubmodel = localStorage.getItem("ai_submodel") || "gpt-4o";
+    requestData.ai_submodel = aiSubmodel;
+    
     // 呼叫後端 API 生成教學理念
     const response = await fetch(`${API_BASE_URL}/courses/generate-rationale`, {
       method: "POST",
@@ -405,6 +448,7 @@ async function generateObjectives() {
     console.log("生成學習目標，使用模型:", aiModel);
 
     // 呼叫後端 API 生成學習目標
+    const aiSubmodel = localStorage.getItem("ai_submodel") || "gpt-4o";
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-objectives`,
       {
@@ -415,6 +459,7 @@ async function generateObjectives() {
         body: JSON.stringify({
           ...courseData,
           ai_model: aiModel,
+          ai_submodel: aiSubmodel,
         }),
       }
     );
@@ -459,12 +504,13 @@ async function generateStrategies() {
       "⌛ 正在生成教學策略...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
 
+    const aiSubmodel = localStorage.getItem("ai_submodel") || "gpt-4o";
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-strategies`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...courseData, ai_model: aiModel }),
+        body: JSON.stringify({ ...courseData, ai_model: aiModel, ai_submodel: aiSubmodel }),
       }
     );
 
@@ -499,10 +545,11 @@ async function generateFlow() {
       "⌛ 正在生成教學流程...";
     const aiModel = localStorage.getItem("ai_model") || "openai";
 
+    const aiSubmodel = localStorage.getItem("ai_submodel") || "gpt-4o";
     const response = await fetch(`${API_BASE_URL}/courses/generate-flow`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...courseData, ai_model: aiModel }),
+      body: JSON.stringify({ ...courseData, ai_model: aiModel, ai_submodel: aiSubmodel }),
     });
 
     const data = await response.json();
