@@ -1,0 +1,19 @@
+venv/
+venv 2/
+venv 3/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+dist/
+build/
+.DS_Store
+.env
+*.log
+uploads/
+course_planner.db
+test_*.py
+
