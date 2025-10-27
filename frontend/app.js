@@ -753,9 +753,11 @@ async function checkGammaStatus(generationId) {
             "success"
           );
 
-          // 跳轉到下一步並顯示結果
-          proceedToStep(6);
+          // 顯示結果並確保按鈕可見
           showMaterialResult(data.gamma_url);
+          
+          // 跳轉到步驟6
+          proceedToStep(6);
           return true;
         } else if (data.generation_status === "pending") {
           // 仍在生成中
