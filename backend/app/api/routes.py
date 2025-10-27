@@ -404,6 +404,57 @@ async def generate_flow(
         raise HTTPException(status_code=500, detail=f"生成失敗: {str(e)}")
 
 
+@router.post("/courses/generate-worksheet")
+async def generate_worksheet(
+    request_data: Dict[str, Any],
+    db: Session = Depends(get_db)
+):
+    """生成學習單（步驟 7）"""
+    try:
+        # 獲取 AI 模型選擇
+        ai_model = request_data.get("ai_model", "openai")
+        
+        # 根據模型選擇獲取 API Key
+        if ai_model == "claude":
+            api_key = request_data.get("api_key") or settings.claude_api_key or os.getenv("CLAUDE_API_KEY")
+            if not api_key:
+                raise HTTPException(status_code=500, detail="未設定 Claude API Key")
+            service = ClaudeService(api_key)
+        else:
+            api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
+            service = OpenAIService(api_key)
+        
+        # 獲取 prompt 模板（優先從資料庫讀取）
+        db_prompt = db.query(PromptTemplate).filter_by(step_number=6).first()
+        if db_prompt:
+            prompt_template = {
+                "content": db_prompt.content,
+                "name": db_prompt.name
+            }
+        else:
+            prompt_template = get_prompt(6)
+        
+        # 替換變數
+        prompt = service.replace_variables(
+            prompt_template["content"],
+            request_data
+        )
+        
+        # 調用 API（使用前端選擇的子模型）
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-3-5-sonnet-20241022")
+        print(f"📡 使用子模型: {ai_submodel}")
+        worksheet = service.generate_content(prompt, model=ai_submodel)
+        
+        return {
+            "status": "success",
+            "worksheet": worksheet
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"生成失敗: {str(e)}")
+
+
 # ==================== 檔案上傳 ====================
 
 @router.post("/upload")

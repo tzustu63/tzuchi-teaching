@@ -142,6 +142,22 @@ function initializeApp() {
     .getElementById("toggle-gamma-settings")
     .addEventListener("click", toggleGammaSettings);
 
+  // Step 6: 教學材料
+  document
+    .getElementById("generate-worksheets")
+    .addEventListener("click", async () => {
+      await generateWorksheets();
+      proceedToStep(7);
+    });
+
+  // Step 7: 製作學習單
+  document
+    .getElementById("regenerate-worksheet")
+    .addEventListener("click", regenerateWorksheet);
+  document
+    .getElementById("download-worksheet")
+    .addEventListener("click", downloadWorksheet);
+
   // 最終下載
   document
     .getElementById("download-all")
@@ -797,6 +813,60 @@ function showStatus(message, type) {
 async function downloadAll() {
   console.log("下載所有材料");
   alert("下載功能待實作");
+}
+
+async function generateWorksheets() {
+  const worksheetContent = document.getElementById("worksheet-content");
+  if (courseData.worksheet) {
+    worksheetContent.textContent = courseData.worksheet;
+    return;
+  }
+
+  try {
+    worksheetContent.textContent = "⌛ 正在生成學習單...";
+    const aiModel = localStorage.getItem("ai_model") || "openai";
+    const aiSubmodel =
+      localStorage.getItem("ai_submodel") ||
+      (aiModel === "openai" ? "gpt-4o" : "claude-3-5-sonnet-20241022");
+
+    const response = await fetch(`${API_BASE_URL}/courses/generate-worksheet`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...courseData,
+        ai_model: aiModel,
+        ai_submodel: aiSubmodel,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+      worksheetContent.textContent = data.worksheet;
+      courseData.worksheet = data.worksheet;
+      console.log(`📊 學習單內容長度: ${data.worksheet?.length || 0} 字元`);
+    } else {
+      throw new Error(data.detail || "生成失敗");
+    }
+  } catch (error) {
+    console.error("生成學習單失敗:", error);
+    worksheetContent.textContent = `❌ 生成失敗：${error.message}`;
+  }
+}
+
+async function regenerateWorksheet() {
+  console.log("重新生成學習單");
+  courseData.worksheet = null;
+  await generateWorksheets();
+}
+
+async function downloadWorksheet() {
+  console.log("下載學習單");
+  alert("學習單下載功能待實作");
 }
 
 function initializePromptEditor() {

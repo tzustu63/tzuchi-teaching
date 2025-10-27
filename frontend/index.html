@@ -40,6 +40,10 @@
           <span class="step-number">6</span>
           <span class="step-label">教學材料</span>
         </div>
+        <div class="step-item" data-step="7" id="nav-step-7">
+          <span class="step-number">7</span>
+          <span class="step-label">製作學習單</span>
+        </div>
       </nav>
 
       <!-- AI 模型選擇 -->
@@ -413,9 +417,23 @@
             <h2>步驟 6: 教學材料</h2>
             <div id="materials-content"></div>
             <div class="step-actions">
+              <button id="generate-worksheets" class="btn btn-primary">
+                下一步：製作學習單
+              </button>
               <button id="download-all" class="btn btn-success">
                 下載所有材料
               </button>
+            </div>
+          </section>
+
+          <!-- Step 7: 製作學習單 -->
+          <section id="step7" class="card step" style="display: none">
+            <h2>步驟 7: 製作學習單</h2>
+            <div id="worksheet-content" class="generated-content"></div>
+            <div class="step-actions">
+              <button id="edit-worksheet" class="btn btn-secondary">編輯</button>
+              <button id="regenerate-worksheet" class="btn btn-secondary">重新生成</button>
+              <button id="download-worksheet" class="btn btn-success">下載學習單</button>
             </div>
           </section>
 
