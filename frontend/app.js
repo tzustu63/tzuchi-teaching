@@ -414,6 +414,10 @@ async function generateRationale() {
     }
 
     // 準備發送給後端的數據
+    const aiSubmodel =
+      localStorage.getItem("ai_submodel") ||
+      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
+    
     const requestData = {
       title: courseData.title,
       grade: courseData.grade,
@@ -422,15 +426,11 @@ async function generateRationale() {
       classroom_equipment: courseData.classroom_equipment,
       upload_content: courseData.upload_content || "",
       ai_model: aiModel,
+      ai_submodel: aiSubmodel,
+      language: currentLanguage,  // 添加語言參數
     };
 
     console.log("📤 發送給後端的完整數據:", requestData);
-
-    // 加入子模型選擇（如果沒有選擇則使用預設）
-    const aiSubmodel =
-      localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o" : "claude-sonnet-4-5-20250929");
-    requestData.ai_submodel = aiSubmodel;
 
     // 呼叫後端 API 生成教學理念
     const response = await fetch(`${API_BASE_URL}/courses/generate-rationale`, {
@@ -596,6 +596,7 @@ async function generateObjectives() {
           ...courseData,
           ai_model: aiModel,
           ai_submodel: aiSubmodel,
+          language: currentLanguage,  // 添加語言參數
         }),
       }
     );
@@ -657,6 +658,7 @@ async function generateStrategies() {
           ...courseData,
           ai_model: aiModel,
           ai_submodel: aiSubmodel,
+          language: currentLanguage,  // 添加語言參數
         }),
       }
     );
@@ -710,6 +712,7 @@ async function generateFlow() {
         ...courseData,
         ai_model: aiModel,
         ai_submodel: aiSubmodel,
+        language: currentLanguage,  // 添加語言參數
       }),
     });
 
