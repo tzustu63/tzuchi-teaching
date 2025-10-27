@@ -38,9 +38,9 @@ class ClaudeService:
         try:
             # 根據語言調整系統提示
             if language == "en":
-                system_message = "You are an experienced curriculum design expert specializing in lesson planning. Please generate complete and detailed content in English."
+                system_message = "You are an experienced curriculum design expert specializing in lesson planning. IMPORTANT: You must generate ALL content in English only. Use English for all text, headings, explanations, and examples. Do not use Chinese characters."
             else:
-                system_message = "你是一位資深的教學設計專家，專精於課程計劃的撰寫。請生成完整且詳細的內容。"
+                system_message = "你是一位資深的教學設計專家，專精於課程計劃的撰寫。重要：請使用繁體中文生成所有內容，包括標題、說明和範例。請生成完整且詳細的內容。"
             
             params = {
                 "model": model,

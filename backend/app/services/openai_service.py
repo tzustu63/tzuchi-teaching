@@ -19,7 +19,8 @@ class OpenAIService:
         prompt: str,
         model: str = "gpt-4o",  # 使用最新的 GPT-4o 模型
         max_tokens: Optional[int] = None,
-        temperature: float = 0.7
+        temperature: float = 0.7,
+        language: str = "zh"
     ) -> str:
         """
         生成內容
@@ -29,16 +30,23 @@ class OpenAIService:
             model: 使用的模型
             max_tokens: 最大令牌數（None 表示無限制，讓模型自己決定）
             temperature: 溫度參數
+            language: 輸出語言 ('zh' 或 'en')
             
         Returns:
             生成的文字內容
         """
         try:
+            # 根據語言調整系統提示
+            if language == "en":
+                system_message = "You are an experienced curriculum design expert specializing in lesson planning. IMPORTANT: You must generate ALL content in English only. Use English for all text, headings, explanations, and examples. Do not use Chinese characters."
+            else:
+                system_message = "你是一位資深的教學設計專家，專精於課程計劃的撰寫。重要：請使用繁體中文生成所有內容，包括標題、說明和範例。"
+            
             # gpt-5 模型使用不同的參數
             params = {
                 "model": model,
                 "messages": [
-                    {"role": "system", "content": "你是一位資深的教學設計專家，專精於課程計劃的撰寫。"},
+                    {"role": "system", "content": system_message},
                     {"role": "user", "content": prompt}
                 ],
                 "temperature": temperature
