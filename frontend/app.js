@@ -389,7 +389,7 @@ ${courseData.title} 是學生理解 ${courseData.grade} 學生需要掌握的核
 
 function initializeSidebar() {
   // 為每個側邊欄項目添加點擊事件
-  for (let i = 1; i <= 6; i++) {
+  for (let i = 1; i <= 7; i++) {
     const navItem = document.getElementById(`nav-step-${i}`);
     if (navItem) {
       navItem.addEventListener("click", () => {
