@@ -48,7 +48,8 @@ const translations = {
     classroomEquipment: "教室設備",
     lessonPlanContent: "教案內容（選填）",
     pleaseSelect: "請選擇",
-    gradeOptions: "小班,中班,大班,一年級,二年級,三年級,四年級,五年級,六年級,七年級,八年級,九年級,高一,高二,高三",
+    gradeOptions:
+      "小班,中班,大班,一年級,二年級,三年級,四年級,五年級,六年級,七年級,八年級,九年級,高一,高二,高三",
     equipmentPlaceholder: "例如: 投影機、電腦、白板",
     supportedFormats: "支援格式: .docx, .pdf, .txt（最大 10MB）",
     nextRationale: "下一步：生成教學理念",
@@ -98,7 +99,8 @@ const translations = {
     classroomEquipment: "Classroom Equipment",
     lessonPlanContent: "Lesson Plan Content (Optional)",
     pleaseSelect: "Please select",
-    gradeOptions: "K1 (Kindergarten),K2 (Kindergarten),K3 (Kindergarten),Grade 1,Grade 2,Grade 3,Grade 4,Grade 5,Grade 6,Grade 7,Grade 8,Grade 9,Grade 10,Grade 11,Grade 12",
+    gradeOptions:
+      "K1 (Kindergarten),K2 (Kindergarten),K3 (Kindergarten),Grade 1,Grade 2,Grade 3,Grade 4,Grade 5,Grade 6,Grade 7,Grade 8,Grade 9,Grade 10,Grade 11,Grade 12",
     equipmentPlaceholder: "e.g., Projector, Computer, Whiteboard",
     supportedFormats: "Supported formats: .docx, .pdf, .txt (max 10MB)",
     nextRationale: "Next Step: Generate Teaching Philosophy",
@@ -1820,7 +1822,7 @@ function updateStep1Form(lang) {
     // 更新選項文字（跳過第一個「請選擇」選項）
     const gradeOptions = t.gradeOptions.split(",");
     let optionIndex = 0;
-    
+
     for (let i = 1; i < gradeSelect.options.length; i++) {
       if (gradeSelect.options[i].value && optionIndex < gradeOptions.length) {
         gradeSelect.options[i].textContent = gradeOptions[optionIndex];
