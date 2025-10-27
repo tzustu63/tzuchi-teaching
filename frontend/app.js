@@ -1806,7 +1806,7 @@ function updateStep1Form(lang) {
     // 更新 optgroup 標籤
     const optgroups = gradeSelect.querySelectorAll("optgroup");
     console.log(`🔍 找到 ${optgroups.length} 個 optgroup`);
-    
+
     if (optgroups.length >= 4) {
       if (lang === "en") {
         optgroups[0].label = "Kindergarten";
@@ -1825,7 +1825,7 @@ function updateStep1Form(lang) {
     const gradeOptions = t.gradeOptions.split(",");
     console.log(`📋 gradeOptions 數量: ${gradeOptions.length}`);
     console.log(`📋 內容: ${gradeOptions.join(", ")}`);
-    
+
     let optionIndex = 0;
 
     // 遍歷所有選項（包括 optgroup 中的）
@@ -1835,15 +1835,17 @@ function updateStep1Form(lang) {
       if (option.value === "" || option.value === "請選擇") {
         continue;
       }
-      
+
       // 更新選項文字
       if (optionIndex < gradeOptions.length) {
         option.textContent = gradeOptions[optionIndex];
-        console.log(`✅ 更新選項 ${i}: ${option.value} → ${gradeOptions[optionIndex]}`);
+        console.log(
+          `✅ 更新選項 ${i}: ${option.value} → ${gradeOptions[optionIndex]}`
+        );
         optionIndex++;
       }
     }
-    
+
     console.log(`✨ 共更新了 ${optionIndex} 個選項`);
   }
 
