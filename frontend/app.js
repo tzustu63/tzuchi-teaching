@@ -793,6 +793,12 @@ function showMaterialResult(gammaUrl) {
         </p>
       </div>
     `;
+    
+    // 顯示「下一步：製作學習單」按鈕
+    const generateWorksheetsBtn = document.getElementById("generate-worksheets");
+    if (generateWorksheetsBtn) {
+      generateWorksheetsBtn.style.display = "inline-block";
+    }
   }
 }
 
