@@ -9,6 +9,18 @@ let currentStep = 1;
 let courseData = {};
 let currentLanguage = localStorage.getItem("language") || "zh";
 
+// 確保 marked 函數可用的輔助函數
+function renderMarkdown(content) {
+  if (!content) return '';
+  // 確保 marked 已載入
+  if (typeof marked === 'undefined') {
+    console.error('marked is not defined');
+    return content;
+  }
+  // 相容不同版本的 marked API
+  return typeof marked.parse === 'function' ? marked.parse(content) : marked(content);
+}
+
 // 翻譯內容
 const translations = {
   zh: {
@@ -40,7 +52,8 @@ const translations = {
     edit: "編輯",
     regenerate: "重新生成",
     download: "下載學習單",
-    generateMaterials: "製作學習單",
+    generateMaterials: "製作簡報",
+    generateWorksheet: "製作學習單",
     courseTitle: "課程標題",
     grade: "年級",
     courseDuration: "課程時長（分鐘）",
@@ -91,7 +104,8 @@ const translations = {
     edit: "Edit",
     regenerate: "Regenerate",
     download: "Download Worksheet",
-    generateMaterials: "Generate Teaching Materials",
+    generateMaterials: "Create Presentation",
+    generateWorksheet: "Create Worksheet",
     courseTitle: "Course Title",
     grade: "Grade",
     courseDuration: "Course Duration (minutes)",
@@ -291,7 +305,9 @@ function initializeApp() {
       // 顯示生成中狀態
       const button = document.getElementById("generate-materials");
       const originalText = button.textContent;
-      setGeneratingState("generate-materials", true, "生成教學材料中...");
+      const statusText =
+        currentLanguage === "en" ? "Creating presentation..." : "製作簡報中...";
+      setGeneratingState("generate-materials", true, statusText);
       try {
         await generateMaterials();
       } finally {
@@ -846,7 +862,7 @@ function toggleGammaSettings() {
 }
 
 async function generateMaterials() {
-  console.log("生成教學材料 - 使用 Gamma API");
+  console.log("製作簡報 - 使用 Gamma API");
 
   // 收集 Gamma 設定
   const gammaSettings = {
@@ -1057,7 +1073,7 @@ async function generateWorksheets() {
 
   // 如果已有內容，直接顯示並返回（不調用 API）
   if (courseData.worksheet) {
-    worksheetContent.innerHTML = marked.parse(courseData.worksheet);
+    worksheetContent.innerHTML = renderMarkdown(courseData.worksheet);
     return;
   }
 
@@ -1134,7 +1150,7 @@ async function generateWorksheets() {
     console.log("📥 收到學習單 API 響應:", data);
 
     if (data.status === "success") {
-      worksheetContent.innerHTML = marked.parse(data.worksheet);
+      worksheetContent.innerHTML = renderMarkdown(data.worksheet);
       courseData.worksheet = data.worksheet;
       console.log(`📊 學習單內容長度: ${data.worksheet?.length || 0} 字元`);
       resetStyles();
@@ -1669,7 +1685,7 @@ function applyLanguage(lang) {
     { id: "confirm-strategies", text: t.nextFlow },
     { id: "edit-flow", text: t.edit },
     { id: "regenerate-flow", text: t.regenerate },
-    { id: "generate-worksheets", text: t.nextStep + t.generateMaterials },
+    { id: "generate-worksheets", text: t.nextStep + t.generateWorksheet },
     { id: "edit-worksheet", text: t.edit },
     { id: "regenerate-worksheet", text: t.regenerate },
     { id: "download-worksheet", text: t.download },

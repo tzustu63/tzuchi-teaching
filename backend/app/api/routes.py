@@ -1,7 +1,7 @@
 """
 API 路由定義
 """
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Query
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Query, Body
 from sqlalchemy.orm import Session
 from typing import Optional, Dict, Any
 import json
@@ -18,47 +18,117 @@ from ..models import PromptTemplate, CoursePlan, APIConfig, GammaGeneration
 from ..prompts import get_prompt, get_all_prompts
 from ..services.gamma_service import GammaService
 from ..config import settings
+from pydantic import BaseModel, Field
 
 
 router = APIRouter()
 
 
+class APIKeyRequest(BaseModel):
+    api_key: str = Field(..., description="要儲存的 API Key")
+    api_type: str = Field(default="openai", description="API 類型，例如 openai、claude、gamma")
+
+
+# 支援的 API 類型
+SUPPORTED_API_TYPES = {"openai", "claude", "gamma"}
+
+
 # ==================== API Key 管理 ====================
 
 @router.get("/api-keys/status")
-async def get_api_key_status():
+async def get_api_key_status(
+    api_type: str = Query("openai", description="要檢查的 API 類型"),
+    db: Session = Depends(get_db),
+):
     """檢查 API Key 狀態"""
-    # TODO: 實作檢查邏輯
-    return {"has_key": True}
+    api_type = api_type.lower()
+    if api_type not in SUPPORTED_API_TYPES:
+        raise HTTPException(status_code=400, detail="不支援的 API 類型")
+
+    config = (
+        db.query(APIConfig)
+        .filter(APIConfig.api_type == api_type, APIConfig.is_valid.is_(True))
+        .order_by(APIConfig.updated_at.desc())
+        .first()
+    )
+
+    env_fallback = None
+    if api_type == "openai":
+        env_fallback = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+    elif api_type == "claude":
+        env_fallback = settings.claude_api_key or os.getenv("CLAUDE_API_KEY")
+    elif api_type == "gamma":
+        env_fallback = settings.gamma_api_key or os.getenv("GAMMA_API_KEY")
+
+    response = {
+        "api_type": api_type,
+        "has_key": bool(config or env_fallback),
+    }
+
+    if config:
+        response.update(
+            {
+                "source": "database",
+                "last_updated": config.updated_at.isoformat()
+                if config.updated_at
+                else None,
+            }
+        )
+    elif env_fallback:
+        response.update({"source": "environment"})
+    else:
+        response.update({"source": "missing"})
+
+    return response
 
 
 @router.post("/api-keys/set")
 async def set_api_key(
-    api_key: str,
+    payload: APIKeyRequest = Body(...),
     db: Session = Depends(get_db)
 ):
-    """設定 API Key"""
-    encrypt_service = EncryptionService()
-    
+    """設定或更新 API Key"""
+    api_type = payload.api_type.lower()
+    if api_type not in SUPPORTED_API_TYPES:
+        raise HTTPException(status_code=400, detail="不支援的 API 類型")
+
+    api_key = payload.api_key.strip()
+    if not api_key:
+        raise HTTPException(status_code=400, detail="API Key 不可為空")
+
     try:
-        # 驗證 API Key
-        test_client = OpenAIService(api_key)
-        # 可以做簡單的測試調用
-        
-        # 加密儲存
+        encrypt_service = EncryptionService(settings.master_encryption_key)
         encrypted_key = encrypt_service.encrypt(api_key)
-        
-        # 儲存到資料庫
-        db_config = APIConfig(
-            api_type="openai",
-            encrypted_key=encrypted_key,
-            is_valid=True
+
+        # 若為 OpenAI，可嘗試建立客戶端以確認格式基礎正確
+        if api_type == "openai":
+            OpenAIService(api_key)
+
+        existing_config = (
+            db.query(APIConfig)
+            .filter(APIConfig.api_type == api_type)
+            .first()
         )
-        db.add(db_config)
+
+        if existing_config:
+            existing_config.encrypted_key = encrypted_key
+            existing_config.is_valid = True
+        else:
+            db_config = APIConfig(
+                api_type=api_type,
+                encrypted_key=encrypted_key,
+                is_valid=True,
+            )
+            db.add(db_config)
+
         db.commit()
-        
-        return {"status": "success", "message": "API Key 已設定"}
+
+        return {"status": "success", "message": f"{api_type.upper()} API Key 已設定"}
+    except ValueError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=400, detail=f"API Key 設定失敗: {str(e)}")
 
 
@@ -69,7 +139,7 @@ async def list_prompts(db: Session = Depends(get_db)):
     """列出所有 prompt 模板"""
     # 從資料庫讀取自訂 prompt，如果沒有則返回預設
     prompts = {}
-    for step_num in range(1, 7):
+    for step_num in range(1, 8):
         db_prompt = db.query(PromptTemplate).filter_by(step_number=step_num).first()
         if db_prompt:
             prompts[step_num] = {
