@@ -2,7 +2,26 @@
  * 課程計劃生成器 - 前端應用
  */
 
-const API_BASE_URL = "http://localhost:8000";
+// 動態偵測 API Base URL
+// 如果在 localhost，使用 localhost:8000
+// 如果在 production（Railway 等），使用相對路徑（前後端同域）或當前域名
+function getApiBaseUrl() {
+  // 檢查是否在本地開發環境
+  if (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+  ) {
+    return "http://localhost:8000";
+  }
+
+  // 生產環境：使用相對路徑（假設前後端在同一域名下）
+  // 如果後端在不同域名，可以從環境變數或配置讀取
+  // 例如：return window.location.origin;
+  return window.location.origin;
+}
+
+const API_BASE_URL = getApiBaseUrl();
+console.log("🌐 API Base URL:", API_BASE_URL);
 
 // 初始化
 let currentStep = 1;
@@ -11,14 +30,16 @@ let currentLanguage = localStorage.getItem("language") || "zh";
 
 // 確保 marked 函數可用的輔助函數
 function renderMarkdown(content) {
-  if (!content) return '';
+  if (!content) return "";
   // 確保 marked 已載入
-  if (typeof marked === 'undefined') {
-    console.error('marked is not defined');
+  if (typeof marked === "undefined") {
+    console.error("marked is not defined");
     return content;
   }
   // 相容不同版本的 marked API
-  return typeof marked.parse === 'function' ? marked.parse(content) : marked(content);
+  return typeof marked.parse === "function"
+    ? marked.parse(content)
+    : marked(content);
 }
 
 // 翻譯內容
