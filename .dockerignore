@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Frontend (not needed in backend Docker build)
+frontend/
+
+# Documentation
+*.md
+openspec/
+
+# Test files
+test_*.py
+*_test.py
+
+# Uploads and database (will be created in container)
+uploads/
+*.db

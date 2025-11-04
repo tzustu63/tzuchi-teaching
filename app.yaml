@@ -31,7 +31,8 @@ services:
       repo: tzustu63/tzuchi-teaching
       branch: V1
       deploy_on_push: true
-    dockerfile_path: backend/Dockerfile
+    source_dir: /backend
+    dockerfile_path: Dockerfile
     http_port: 8000
     instance_count: 1
     instance_size_slug: basic-xxs
