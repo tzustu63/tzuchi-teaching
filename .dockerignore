@@ -12,34 +12,20 @@ venv/
 env/
 ENV/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Environment
-.env
-.env.local
-
-# Logs
-*.log
-
-# OS
+# OS / 編輯器
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
 
-# Frontend (not needed in backend Docker build)
-frontend/
+# 環境設定
+.env
+.env.*
 
-# Documentation
-*.md
-openspec/
-
-# Test files
-test_*.py
-*_test.py
-
-# Uploads and database (will be created in container)
+# 測試與暫存
+*.log
+*.sqlite*
 uploads/
-*.db
+
+# 前端建置產物（重新複製即可）
+node_modules/
