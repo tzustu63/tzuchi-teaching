@@ -27,7 +27,13 @@ git push origin V1
    - **Run command**: 無需填寫（Dockerfile 已設定）
    - **HTTP port**: `8000`
 4. 如需前端靜態網站，可另外建立 Static Site 指向 `/frontend`（可選）
-5. 在環境變數區段加入必要 Key，例如 `OPENAI_API_KEY`
+5. **設置環境變數**（重要！）：
+   - 進入 **Settings** → **App-Level Environment Variables**
+   - 點擊 **Edit** 新增以下環境變數：
+     - `OPENAI_API_KEY` = 您的 OpenAI API 金鑰（類型：SECRET）
+     - `CLAUDE_API_KEY` = 您的 Claude API 金鑰（類型：SECRET）
+     - `GAMMA_API_KEY` = 您的 Gamma API 金鑰（類型：SECRET）
+   - 📖 **詳細步驟請參考**：[環境變數設置指南](./DIGITALOCEAN_ENV_SETUP.md)
 6. 儲存後部署
 
 ## 4. 驗證部署

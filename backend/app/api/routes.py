@@ -82,6 +82,56 @@ async def get_api_key_status(
     return response
 
 
+@router.get("/debug/env-check")
+async def check_environment_variables():
+    """診斷：檢查環境變數是否正確讀取"""
+    # 檢查環境變數（多種方式）
+    openai_from_env = os.getenv("OPENAI_API_KEY")
+    openai_from_settings = settings.openai_api_key
+    
+    claude_from_env = os.getenv("CLAUDE_API_KEY")
+    claude_from_settings = settings.claude_api_key
+    
+    gamma_from_env = os.getenv("GAMMA_API_KEY")
+    gamma_from_settings = settings.gamma_api_key
+    
+    # 檢查是否已設置（只顯示前幾個字符以保護隱私）
+    def mask_key(key: Optional[str]) -> dict:
+        if not key:
+            return {"exists": False, "length": 0, "preview": None}
+        return {
+            "exists": True,
+            "length": len(key),
+            "preview": f"{key[:8]}...{key[-4:]}" if len(key) > 12 else "***"
+        }
+    
+    return {
+        "status": "success",
+        "environment_variables": {
+            "OPENAI_API_KEY": {
+                "from_os.getenv": mask_key(openai_from_env),
+                "from_settings": mask_key(openai_from_settings),
+                "final_value": "✅ 已設置" if (openai_from_env or openai_from_settings) else "❌ 未設置"
+            },
+            "CLAUDE_API_KEY": {
+                "from_os.getenv": mask_key(claude_from_env),
+                "from_settings": mask_key(claude_from_settings),
+                "final_value": "✅ 已設置" if (claude_from_env or claude_from_settings) else "❌ 未設置"
+            },
+            "GAMMA_API_KEY": {
+                "from_os.getenv": mask_key(gamma_from_env),
+                "from_settings": mask_key(gamma_from_settings),
+                "final_value": "✅ 已設置" if (gamma_from_env or gamma_from_settings) else "❌ 未設置"
+            }
+        },
+        "recommendations": {
+            "openai": "✅ 正常" if (openai_from_env or openai_from_settings) else "⚠️ 請在 DigitalOcean 設置 OPENAI_API_KEY 環境變數",
+            "claude": "✅ 正常" if (claude_from_env or claude_from_settings) else "⚠️ 請在 DigitalOcean 設置 CLAUDE_API_KEY 環境變數",
+            "gamma": "✅ 正常" if (gamma_from_env or gamma_from_settings) else "⚠️ 請在 DigitalOcean 設置 GAMMA_API_KEY 環境變數"
+        }
+    }
+
+
 @router.post("/api-keys/set")
 async def set_api_key(
     payload: APIKeyRequest = Body(...),
