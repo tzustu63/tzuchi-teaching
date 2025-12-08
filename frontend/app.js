@@ -18,14 +18,16 @@ let currentLanguage = localStorage.getItem("language") || "zh";
 
 // 確保 marked 函數可用的輔助函數
 function renderMarkdown(content) {
-  if (!content) return '';
+  if (!content) return "";
   // 確保 marked 已載入
-  if (typeof marked === 'undefined') {
-    console.error('marked is not defined');
+  if (typeof marked === "undefined") {
+    console.error("marked is not defined");
     return content;
   }
   // 相容不同版本的 marked API
-  return typeof marked.parse === 'function' ? marked.parse(content) : marked(content);
+  return typeof marked.parse === "function"
+    ? marked.parse(content)
+    : marked(content);
 }
 
 // 翻譯內容
