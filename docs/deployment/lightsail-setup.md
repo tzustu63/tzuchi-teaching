@@ -4,6 +4,22 @@
 
 - **IP**: 18.181.71.46
 - **主域名**: harvestwize.com
+- **帳號**: ubuntu
+- **SSH Key**: `LightsailDefaultKey-ap-northeast-1.pem`
+- **課程計劃生成器網址**: https://course-planner.harvestwize.com/
+
+### SSH 連線
+
+```bash
+ssh -i "LightsailDefaultKey-ap-northeast-1.pem" ubuntu@18.181.71.46
+```
+
+### 快速部署更新
+
+```bash
+ssh -i "LightsailDefaultKey-ap-northeast-1.pem" ubuntu@18.181.71.46 \
+  "cd /home/ubuntu/tzuchi-teaching && git pull origin V1 && docker-compose -f docker-compose.prod.yml up -d --build"
+```
 
 ## 可用網址
 

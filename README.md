@@ -22,6 +22,10 @@ new-teaching/
 │   ├── index.html       # 主頁面
 │   ├── styles.css       # 樣式表
 │   └── app.js           # 前端邏輯
+├── docs/                # 文件資料夾
+│   ├── deployment/      # 部署相關文件
+│   ├── features/        # 功能說明文件
+│   └── api/             # API 設定文件
 └── openspec/           # OpenSpec 規範
 ```
 
@@ -75,7 +79,9 @@ uvicorn main:app --reload
 
 ## AWS Lightsail Docker 部署指南
 
-詳細部署步驟請參考 [LIGHTSAIL_DEPLOYMENT.md](./LIGHTSAIL_DEPLOYMENT.md)
+詳細部署步驟請參考 [LIGHTSAIL_DEPLOYMENT.md](./docs/deployment/LIGHTSAIL_DEPLOYMENT.md)
+
+伺服器架構設計請參考 [lightsail-setup.md](./docs/deployment/lightsail-setup.md)
 
 ### 快速部署
 
