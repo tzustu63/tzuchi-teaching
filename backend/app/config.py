@@ -25,12 +25,6 @@ class Settings(BaseSettings):
     db_max_overflow: int = 10
     pg_sslmode: Optional[str] = None
     
-    # DigitalOcean Spaces
-    spaces_access_key: Optional[str] = None
-    spaces_secret_key: Optional[str] = None
-    spaces_region: str = "nyc3"
-    spaces_endpoint: str = "https://nyc3.digitaloceanspaces.com"
-    
     # Encryption
     master_encryption_key: str = "default_key_change_in_production_32bytes!!"
     
@@ -53,7 +47,7 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # 備用方案：如果 pydantic_settings 沒有讀取到，直接從 os.getenv 讀取
-# 這確保在 DigitalOcean 等環境中也能正確讀取環境變數
+# 這確保在 Docker 等環境中也能正確讀取環境變數
 if not settings.openai_api_key:
     settings.openai_api_key = os.getenv("OPENAI_API_KEY")
 if not settings.gamma_api_key:
