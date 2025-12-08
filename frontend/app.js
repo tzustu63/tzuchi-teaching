@@ -2,7 +2,14 @@
  * 課程計劃生成器 - 前端應用
  */
 
-const API_BASE_URL = "http://localhost:8000";
+const DEFAULT_LOCAL_API = "http://localhost:8000";
+const API_BASE_URL =
+  typeof window !== "undefined" &&
+  window.location &&
+  window.location.hostname &&
+  !/(localhost|127\.0\.0\.1)/.test(window.location.hostname)
+    ? ""
+    : DEFAULT_LOCAL_API;
 
 // 初始化
 let currentStep = 1;
@@ -189,8 +196,17 @@ function initializeApp() {
     });
 
     // 載入已儲存的選擇
-    const savedModel = localStorage.getItem("ai_model") || "openai";
-    const savedSubmodel = localStorage.getItem("ai_submodel");
+    let savedModel = localStorage.getItem("ai_model") || "openai";
+    if (savedModel !== "openai") {
+      savedModel = "openai";
+      localStorage.setItem("ai_model", savedModel);
+    }
+
+    let savedSubmodel = localStorage.getItem("ai_submodel");
+    if (!savedSubmodel || savedSubmodel.startsWith("claude")) {
+      savedSubmodel = "gpt-4o-mini";
+      localStorage.setItem("ai_submodel", savedSubmodel);
+    }
 
     sidebarModelSelect.value = savedModel;
     updateSubmodelOptions(savedModel);
@@ -386,10 +402,7 @@ function saveAPIKey() {
   // 儲存選擇的 AI 模型
   localStorage.setItem("ai_model", aiModel);
 
-  showStatus(
-    `已選擇 ${aiModel === "openai" ? "OpenAI" : "Claude"}，API Key 已預設配置`,
-    "success"
-  );
+  showStatus(`已選擇 OpenAI，API Key 已預設配置`, "success");
 
   // 顯示工作流程
   document.getElementById("workflow-container").style.display = "block";
@@ -502,8 +515,7 @@ async function generateRationale() {
 
     // 準備發送給後端的數據
     const aiSubmodel =
-      localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
+      localStorage.getItem("ai_submodel") || "gpt-4o-mini";
 
     const requestData = {
       title: courseData.title,
@@ -681,8 +693,7 @@ async function generateObjectives() {
 
     // 呼叫後端 API 生成學習目標
     const aiSubmodel =
-      localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
+      localStorage.getItem("ai_submodel") || "gpt-4o-mini";
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-objectives`,
       {
@@ -748,8 +759,7 @@ async function generateStrategies() {
     const aiModel = localStorage.getItem("ai_model") || "openai";
 
     const aiSubmodel =
-      localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
+      localStorage.getItem("ai_submodel") || "gpt-4o-mini";
     const response = await fetch(
       `${API_BASE_URL}/courses/generate-strategies`,
       {
@@ -807,8 +817,7 @@ async function generateFlow() {
     const aiModel = localStorage.getItem("ai_model") || "openai";
 
     const aiSubmodel =
-      localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
+      localStorage.getItem("ai_submodel") || "gpt-4o-mini";
     const response = await fetch(`${API_BASE_URL}/courses/generate-flow`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1101,8 +1110,7 @@ async function generateWorksheets() {
   try {
     const aiModel = localStorage.getItem("ai_model") || "openai";
     const aiSubmodel =
-      localStorage.getItem("ai_submodel") ||
-      (aiModel === "openai" ? "gpt-4o-mini" : "claude-sonnet-4-5-20250929");
+      localStorage.getItem("ai_submodel") || "gpt-4o-mini";
 
     // 準備請求資料
     const requestData = {
@@ -1902,7 +1910,7 @@ function updateStep1Form(lang) {
   if (featuresList && featuresList.length > 0) {
     if (lang === "en") {
       featuresList[0].textContent =
-        "🚀 Using the latest AI models (GPT-4o / Claude Sonnet 4.5)";
+        "🚀 Using the latest OpenAI models (GPT-4o series)";
       featuresList[1].textContent =
         "📝 Generate complete lesson plans in 7 steps";
       featuresList[2].textContent = "🎨 Beautiful sidebar navigation";
@@ -1910,7 +1918,7 @@ function updateStep1Form(lang) {
       featuresList[4].textContent = "💾 Auto-save progress";
     } else {
       featuresList[0].textContent =
-        "🚀 使用最新的 AI 模型（GPT-4o / Claude Sonnet 4.5）";
+        "🚀 使用最新的 OpenAI 模型（GPT-4o 系列）";
       featuresList[1].textContent = "📝 七步驟生成完整課程計劃";
       featuresList[2].textContent = "🎨 美觀的側邊欄導航";
       featuresList[3].textContent = "🔧 可自訂 Prompt 模板";

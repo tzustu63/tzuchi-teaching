@@ -22,7 +22,7 @@
 1. **訪問應用程式**
 
    - 打開瀏覽器：http://localhost:3000
-   - 選擇 AI 模型（OpenAI 或 Claude）
+   - 選擇 AI 模型（OpenAI）
 
 2. **填寫基本資訊**
 
@@ -52,7 +52,7 @@
 檔案內容已讀取: [檔案內容的前 300 字元]...
 ✅ 包含上傳的檔案內容，長度: 1234 字元
 檔案內容預覽: [檔案內容]...
-選擇的 AI 模型: claude
+選擇的 AI 模型: openai
 課程數據: {title: '親切有禮', grade: '一年級', ..., upload_content: '...'}
 📤 發送給後端的完整數據: {...}
 API 響應: {status: 'success', rationale: '...'}
@@ -62,7 +62,7 @@ API 響應: {status: 'success', rationale: '...'}
 
 ```
 🔧 收到生成請求
-  - AI 模型: claude
+  - AI 模型: openai
   - 課程標題: 親切有禮
   - 年級: 一年級
   - 時長: 30
@@ -72,7 +72,7 @@ API 響應: {status: 'success', rationale: '...'}
   - 檔案內容預覽: [前 300 字元]...
 📝 開始組合 Prompt...
 ✅ Prompt 組合完成，長度: 2345 字元
-🤖 開始調用 claude API 生成內容...
+🤖 開始調用 OpenAI API 生成內容...
 ✅ 內容生成完成！
 📊 生成的教學理念長度: 3456 字元
 ```
@@ -125,7 +125,7 @@ A: 系統會自動降級
 - 日期：2025-10-27
 - 前端：http://localhost:3000
 - 後端：http://localhost:8000
-- AI 模型：Claude Sonnet 4.5 / OpenAI GPT-4o
+- AI 子模型：OpenAI GPT-4o
 
 ### 測試結果
 
@@ -134,7 +134,7 @@ A: 系統會自動降級
 | 檔案上傳 | ✅   | PDF/Word/TXT 都能正常上傳  |
 | 內容解析 | ✅   | 能夠正確讀取檔案內容       |
 | 數據傳遞 | ✅   | 前端正確發送給後端         |
-| AI 生成  | ✅   | Claude/OpenAI 都能正常生成 |
+| AI 生成  | ✅   | OpenAI 能正常生成          |
 | 內容整合 | ✅   | 生成的內容參考了檔案       |
 
 ---

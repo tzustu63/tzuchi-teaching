@@ -5,7 +5,7 @@
 ### 1. 側邊欄新增 AI 模型選擇
 
 - **位置**：在側邊欄步驟列表下方，Prompt 編輯按鈕上方
-- **顯示**：簡化為「OpenAI」和「Claude」（不顯示具體模型版本）
+- **顯示**：僅保留「OpenAI」（不顯示具體模型版本）
 - **樣式**：深色背景的選擇器，與側邊欄風格一致
 
 ### 2. 簡化的用戶界面
@@ -30,7 +30,6 @@
   <h3>🤖 AI 模型</h3>
   <select id="sidebar-ai-model-select">
     <option value="openai">OpenAI</option>
-    <option value="claude">Claude</option>
   </select>
 </div>
 ```
@@ -47,9 +46,7 @@
 ### 移除版本號
 
 - ❌ ~~OpenAI (GPT-4o)~~
-- ❌ ~~Claude (Sonnet 4.5)~~
 - ✅ **OpenAI**
-- ✅ **Claude**
 
 ### 優點
 
@@ -77,7 +74,7 @@
 ### 使用流程
 
 1. 打開頁面時，側邊欄已顯示 AI 模型選擇器
-2. 選擇 OpenAI 或 Claude
+2. 選擇 OpenAI
 3. 點擊「開始使用」
 4. 自動切換到課程計劃創建界面
 

@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>課程計劃生成器</title>
+    <link
+      rel="icon"
+      href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%234186f4"/><text x="32" y="40" font-size="32" text-anchor="middle" fill="white">📚</text></svg>'
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -84,7 +88,6 @@
         </h3>
         <select id="sidebar-ai-model-select" class="sidebar-select">
           <option value="openai">OpenAI</option>
-          <option value="claude">Claude</option>
         </select>
 
         <h3
@@ -112,42 +115,6 @@
             GPT-3.5 Turbo
           </option>
 
-          <!-- Claude 模型 -->
-          <option
-            value="claude-sonnet-4-5-20250929"
-            data-provider="claude"
-            style="display: none"
-          >
-            Claude Sonnet 4.5 (最新)
-          </option>
-          <option
-            value="claude-3-5-sonnet-20241022"
-            data-provider="claude"
-            style="display: none"
-          >
-            Claude 3.5 Sonnet
-          </option>
-          <option
-            value="claude-3-5-haiku-20241022"
-            data-provider="claude"
-            style="display: none"
-          >
-            Claude 3.5 Haiku (快速)
-          </option>
-          <option
-            value="claude-3-opus-20240229"
-            data-provider="claude"
-            style="display: none"
-          >
-            Claude 3 Opus
-          </option>
-          <option
-            value="claude-3-sonnet-20240229"
-            data-provider="claude"
-            style="display: none"
-          >
-            Claude 3 Sonnet
-          </option>
         </select>
       </div>
 
@@ -225,7 +192,7 @@
           >
             <h3 style="color: white; margin-bottom: 15px">✨ 功能特色</h3>
             <ul style="color: rgba(255, 255, 255, 0.9); line-height: 2">
-              <li>🚀 使用最新的 AI 模型（GPT-4o / Claude Sonnet 4.5）</li>
+              <li>🚀 使用最新的 OpenAI 模型（GPT-4o 系列）</li>
               <li>📝 六步驟生成完整課程計劃</li>
               <li>🎨 美觀的側邊欄導航</li>
               <li>🔧 可自訂 Prompt 模板</li>

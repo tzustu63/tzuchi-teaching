@@ -1,6 +1,15 @@
 """
 課程計劃生成器 - FastAPI 主應用
 """
+import sys
+import io
+
+# 強制設定 UTF-8 編碼（解決 production 環境的 ASCII 編碼問題）
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

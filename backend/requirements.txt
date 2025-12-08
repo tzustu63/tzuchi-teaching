@@ -6,7 +6,6 @@ psycopg2-binary
 pydantic
 pydantic-settings
 openai
-anthropic
 python-multipart
 python-pptx
 cryptography

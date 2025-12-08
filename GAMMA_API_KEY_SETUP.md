@@ -3,7 +3,7 @@
 ## API Key 資訊
 
 ```
-GAMMA_API_KEY=sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8
+GAMMA_API_KEY=your-gamma-key-here
 ```
 
 ## 設定方式
@@ -21,13 +21,10 @@ touch .env
 
 ```env
 # Gamma API Configuration
-GAMMA_API_KEY=sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8
+GAMMA_API_KEY=your-gamma-key-here
 
 # OpenAI API Key (optional)
 # OPENAI_API_KEY=your-openai-key-here
-
-# Claude API Key (optional)
-# CLAUDE_API_KEY=your-claude-key-here
 ```
 
 ### 方式二：使用環境變數
@@ -35,7 +32,7 @@ GAMMA_API_KEY=sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8
 在終端機中設定：
 
 ```bash
-export GAMMA_API_KEY=sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8
+export GAMMA_API_KEY=your-gamma-key-here
 ```
 
 或在系統環境變數中設定（永久性）
@@ -76,7 +73,7 @@ curl -X POST http://localhost:8000/api/courses/generate-ppt \
 
 ## 目前設定狀態
 
-✅ API Key 已提供：`sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8`  
+✅ API Key 已提供（請替換為您自己的 key）  
 ✅ 已更新程式碼以支援 Gamma API v0.2  
 ✅ 已建立相關文檔
 

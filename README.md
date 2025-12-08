@@ -73,6 +73,49 @@ uvicorn main:app --reload
 
 開啟 `frontend/index.html` 在瀏覽器中。
 
+## Railway 部署指南
+
+1. **安裝 Railway CLI**
+   ```bash
+   curl -fsSL https://railway.app/install.sh | sh
+   ```
+   重新載入終端機後，執行 `railway login` 以完成授權。
+
+2. **初始化專案**
+   ```bash
+   cd "/Users/kuoyuming/Desktop/程式開發/new teaching拷貝"
+   railway init    # 或使用 railway link 連接既有專案
+   ```
+
+3. **建立 Railway Postgres**
+   - 在 Railway 儀表板加入 Postgres 外掛。
+   - 於 `Variables` 介面複製連線字串，設定為 `DATABASE_URL`。
+
+4. **設定必需的環境變數**
+   ```bash
+   railway variables set OPENAI_API_KEY=sk-xxx
+   railway variables set MASTER_ENCRYPTION_KEY=<32字元以上安全字串>
+   railway variables set DATABASE_URL=<來自 Railway 的 Postgres 連線字串>
+   # 如需 Gamma 功能：
+   railway variables set GAMMA_API_KEY=gamma-xxx
+   ```
+   可視需求新增：
+   - `DB_POOL_SIZE`（預設 5）
+   - `DB_MAX_OVERFLOW`（預設 10）
+   - `PGSSLMODE`（預設 `require`，當連線字串未指定時自動補上）
+
+5. **部署**
+   ```bash
+   railway up
+   ```
+   Railway 會依 `railway.json` 使用 Railpack 安裝依賴（執行 `pip install -r requirements.txt`），並透過 `uvicorn backend.main:app --host 0.0.0.0 --port ${PORT}` 啟動服務。
+
+6. **驗證**
+   - 確認 `/health` 回應 `{"status": "healthy"}`
+   - 測試主要流程（生成課程計劃、儲存資料、Gamma PPT 等）
+
+> **注意：** Railway 容器檔案系統為暫存性質，`uploads/` 的檔案會在重新部署或重啟後被清除。若需長期保存上傳檔案，請整合外部物件儲存（如 S3、DigitalOcean Spaces）。
+
 ## 開發狀態
 
 - ✅ 階段 1: 專案基礎架構 - 完成

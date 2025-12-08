@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 資料庫（課程計劃生成器，完全獨立）
+  postgres:
+    image: postgres:15-alpine
+    container_name: course-planner-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-course_planner_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?請設定 DB_PASSWORD 環境變數}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${DB_PORT:-5433}:5432"  # 不同的端口，避免與應用1衝突
+    volumes:
+      - course_planner_postgres_data:/var/lib/postgresql/data
+    networks:
+      - course-planner-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-course_planner_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # 後端 API（課程計劃生成器）
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: course-planner-backend
+    restart: unless-stopped
+    environment:
+      # 應用配置
+      PORT: 8000
+      ENVIRONMENT: production
+      DEBUG: "false"
+      
+      # 資料庫配置（使用同網路內的服務名）
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:?請設定 DB_PASSWORD}@postgres:5432/${DB_NAME:-course_planner_db}
+      DB_NAME: ${DB_NAME:-course_planner_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?請設定 DB_PASSWORD 環境變數}
+      PGSSLMODE: ${PGSSLMODE:-prefer}
+      
+      # API Keys（可選，但功能需要這些 keys）
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GAMMA_API_KEY: ${GAMMA_API_KEY:-}
+      
+      # 加密金鑰（必須修改！）
+      MASTER_ENCRYPTION_KEY: ${MASTER_ENCRYPTION_KEY:?請設定 MASTER_ENCRYPTION_KEY 環境變數}
+      
+      # CORS 設定（生產環境建議設為特定域名）
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://18.181.71.46:3001,http://localhost:3001}
+    ports:
+      - "${BACKEND_PORT:-5002}:8000"  # 不同的端口，避免與應用1衝突
+    volumes:
+      - course_planner_backend_uploads:/app/uploads
+      - course_planner_backend_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - course-planner-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--method=GET", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # 前端應用（課程計劃生成器）
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        API_URL: ${API_URL:-http://18.181.71.46:5002}
+    container_name: course-planner-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3001}:80"  # 不同的端口，避免與應用1衝突
+    depends_on:
+      - backend
+    networks:
+      - course-planner-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  course_planner_postgres_data:
+    driver: local
+  course_planner_backend_uploads:
+    driver: local
+  course_planner_backend_logs:
+    driver: local
+
+networks:
+  course-planner-network:
+    driver: bridge
+

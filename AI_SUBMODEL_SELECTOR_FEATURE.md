@@ -15,19 +15,12 @@
 - ✅ **GPT-4** - 標準版本
 - ✅ **GPT-3.5 Turbo** - 快速經濟
 
-### Claude 模型
-
-- ✅ **Claude Sonnet 4.5** (最新) - 推薦使用
-- ✅ **Claude Sonnet 4** - 穩定版本
-- ✅ **Claude 3.5 Sonnet** - 高質量輸出
-- ✅ **Claude 3 Opus** - 最強性能
-
 ## 🎯 功能特點
 
 ### 1. 動態顯示
 
-- 選擇 OpenAI 時，只顯示 OpenAI 模型選項
-- 選擇 Claude 時，只顯示 Claude 模型選項
+- 依據目前支援的 OpenAI 模型清單動態顯示選項
+- 可彈性新增或移除 OpenAI 子模型
 - 自動切換，無需手動操作
 
 ### 2. 自動保存
@@ -59,20 +52,13 @@
 
 ## 🚀 使用方法
 
-### 1. 選擇 AI 提供商
-
-點擊側邊欄的「🤖 AI 模型」下拉選單：
-
-- 選擇 **OpenAI** 或 **Claude**
-
-### 2. 選擇子模型
+### 1. 選擇子模型
 
 在「📡 子模型」下拉選單中選擇具體模型：
 
 - OpenAI 選擇：GPT-4o (推薦), GPT-4 Turbo, GPT-4, GPT-3.5 Turbo
-- Claude 選擇：Claude Sonnet 4.5 (推薦), Claude Sonnet 4, Claude 3.5 Sonnet, Claude 3 Opus
 
-### 3. 自動應用
+### 2. 自動應用
 
 您的選擇會自動應用到所有後續的生成操作：
 
@@ -83,20 +69,9 @@
 
 ## 💡 推薦設定
 
-### 高質量輸出
-
-- **OpenAI**: GPT-4o
-- **Claude**: Claude Sonnet 4.5
-
-### 平衡性能與成本
-
-- **OpenAI**: GPT-4 Turbo
-- **Claude**: Claude 3.5 Sonnet
-
-### 快速經濟
-
-- **OpenAI**: GPT-3.5 Turbo
-- **Claude**: Claude 3.5 Sonnet
+- **高質量輸出**：GPT-4o
+- **平衡性能與成本**：GPT-4 Turbo
+- **快速經濟**：GPT-3.5 Turbo
 
 ## 🔍 技術細節
 
@@ -124,7 +99,7 @@ requestData.ai_submodel = aiSubmodel;
 
 ```python
 # 接收子模型參數
-ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5")
+ai_submodel = request_data.get("ai_submodel", "gpt-4o")
 
 # 調用 API
 rationale = service.generate_content(prompt, model=ai_submodel)
@@ -137,12 +112,6 @@ rationale = service.generate_content(prompt, model=ai_submodel)
 - max_tokens: 8192 (已增加)
 - temperature: 0.7
 - 支援所有 GPT 系列模型
-
-### Claude 服務
-
-- max_tokens: 8192 (已增加)
-- temperature: 0.7
-- 支援所有 Claude 系列模型
 
 ## ✅ 測試功能
 
@@ -162,13 +131,6 @@ rationale = service.generate_content(prompt, model=ai_submodel)
 tail -f /tmp/backend.log | grep "使用子模型"
 ```
 
-輸出範例：
-
-```
-📡 使用子模型: gpt-4o
-📡 使用子模型: claude-sonnet-4-5
-```
-
 ## 🎉 完成狀態
 
 - ✅ 子模型選擇器 UI 完成
@@ -179,25 +141,17 @@ tail -f /tmp/backend.log | grep "使用子模型"
 
 ## 📝 注意事項
 
-### 模型可用性
-
-- 確保您的 API Key 有權限使用選擇的模型
-- GPT-4 需要付費帳號
-- Claude Sonnet 4.5 需要 Anthropic 帳號
-
 ### 預設模型
 
 - 如果未選擇子模型，會自動使用預設值
 - OpenAI 預設：gpt-4o
-- Claude 預設：claude-sonnet-4-5
 
 ## 🚀 下一步
 
 現在您可以：
 
-1. 選擇不同的 AI 提供商
-2. 選擇該提供商下的具體模型
-3. 所有生成操作都會使用您選擇的模型
-4. 您的選擇會自動保存，下次使用時會記住
+1. 從 OpenAI 模型清單中挑選最適合的子模型
+2. 所有生成操作都會使用您選擇的模型
+3. 您的選擇會自動保存，下次使用時會記住
 
 嘗試不同的模型組合，找到最適合您的設定！

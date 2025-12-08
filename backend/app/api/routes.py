@@ -6,13 +6,13 @@ from sqlalchemy.orm import Session
 from typing import Optional, Dict, Any
 import json
 import os
+import logging
 from datetime import datetime
 import PyPDF2
 from docx import Document
 
 from ..database import get_db
 from ..services.openai_service import OpenAIService
-from ..services.claude_service import ClaudeService
 from ..services.encryption_service import EncryptionService
 from ..models import PromptTemplate, CoursePlan, APIConfig, GammaGeneration
 from ..prompts import get_prompt, get_all_prompts
@@ -20,17 +20,21 @@ from ..services.gamma_service import GammaService
 from ..config import settings
 from pydantic import BaseModel, Field
 
+# 設定 logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 
 router = APIRouter()
 
 
 class APIKeyRequest(BaseModel):
     api_key: str = Field(..., description="要儲存的 API Key")
-    api_type: str = Field(default="openai", description="API 類型，例如 openai、claude、gamma")
+    api_type: str = Field(default="openai", description="API 類型，例如 openai、gamma")
 
 
 # 支援的 API 類型
-SUPPORTED_API_TYPES = {"openai", "claude", "gamma"}
+SUPPORTED_API_TYPES = {"openai", "gamma"}
 
 
 # ==================== API Key 管理 ====================
@@ -55,8 +59,6 @@ async def get_api_key_status(
     env_fallback = None
     if api_type == "openai":
         env_fallback = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
-    elif api_type == "claude":
-        env_fallback = settings.claude_api_key or os.getenv("CLAUDE_API_KEY")
     elif api_type == "gamma":
         env_fallback = settings.gamma_api_key or os.getenv("GAMMA_API_KEY")
 
@@ -249,34 +251,29 @@ async def generate_rationale(
     """生成教學理念（步驟 1 → 2）"""
     try:
         # 獲取 AI 模型選擇
-        ai_model = basic_info.get("ai_model", "openai")
+        ai_model = (basic_info.get("ai_model") or "openai").lower()
+        if ai_model != "openai":
+            raise HTTPException(status_code=400, detail="目前僅支援 OpenAI 模型")
         
-        print(f"🔧 收到生成請求")
-        print(f"  - AI 模型: {ai_model}")
-        print(f"  - 課程標題: {basic_info.get('title')}")
-        print(f"  - 年級: {basic_info.get('grade')}")
-        print(f"  - 時長: {basic_info.get('duration')}")
-        print(f"  - 學生人數: {basic_info.get('student_count')}")
-        print(f"  - 教室設備: {basic_info.get('classroom_equipment')}")
+        logger.info("收到生成請求")
+        logger.info(f"  AI 模型: {ai_model}")
+        logger.info(f"  課程標題: {basic_info.get('title', '')}")
+        logger.info(f"  年級: {basic_info.get('grade', '')}")
+        logger.info(f"  時長: {basic_info.get('duration', '')}")
+        logger.info(f"  學生人數: {basic_info.get('student_count', '')}")
+        logger.info(f"  教室設備: {basic_info.get('classroom_equipment', '')}")
         
         # 檢查是否有上傳的檔案內容
         if "upload_content" in basic_info and basic_info["upload_content"]:
-            print(f"  - ✅ 包含上傳的檔案內容，長度: {len(basic_info['upload_content'])} 字元")
-            print(f"  - 檔案內容預覽: {basic_info['upload_content'][:300]}...")
+            logger.info(f"  包含上傳的檔案內容，長度: {len(basic_info['upload_content'])} 字元")
         else:
-            print(f"  - ⚠️ 沒有上傳檔案內容")
+            logger.info("  沒有上傳檔案內容")
         
         # 根據模型選擇獲取 API Key（優先使用前端傳入的 key，否則使用預設）
-        if ai_model == "claude":
-            api_key = basic_info.get("api_key") or settings.claude_api_key or os.getenv("CLAUDE_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 Claude API Key")
-            service = ClaudeService(api_key)
-        else:
-            api_key = basic_info.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
-            service = OpenAIService(api_key)
+        api_key = basic_info.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
+        service = OpenAIService(api_key)
         
         # 獲取 prompt 模板（優先從資料庫讀取）
         db_prompt = db.query(PromptTemplate).filter_by(step_number=1).first()
@@ -297,29 +294,32 @@ async def generate_rationale(
         # 替換變數（包括 upload_content）
         basic_info["upload_content"] = upload_text
         
-        print(f"📝 開始組合 Prompt...")
+        logger.info("開始組合 Prompt...")
         prompt = service.replace_variables(
             prompt_template["content"],
             basic_info
         )
-        print(f"✅ Prompt 組合完成，長度: {len(prompt)} 字元")
+        logger.info(f"Prompt 組合完成，長度: {len(prompt)} 字元")
         
         # 調用 AI API（使用前端選擇的子模型）
-        ai_submodel = basic_info.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        ai_submodel = basic_info.get("ai_submodel", "gpt-4o")
         language = basic_info.get("language", "zh")
-        print(f"🤖 開始調用 {ai_model} API 生成內容...")
-        print(f"📡 使用子模型: {ai_submodel}")
-        print(f"🌐 輸出語言: {language}")
+        logger.info(f"開始調用 {ai_model} API 生成內容...")
+        logger.info(f"使用子模型: {ai_submodel}")
+        logger.info(f"輸出語言: {language}")
         rationale = service.generate_content(prompt, model=ai_submodel, language=language)
         
-        print(f"✅ 內容生成完成！")
-        print(f"📊 生成的教學理念長度: {len(rationale)} 字元")
+        logger.info("內容生成完成！")
+        logger.info(f"生成的教學理念長度: {len(rationale)} 字元")
         
         return {
             "status": "success",
             "rationale": rationale
         }
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"生成失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"生成失敗: {str(e)}")
 
 
@@ -331,19 +331,14 @@ async def generate_objectives(
     """生成學習目標（步驟 2 → 3）"""
     try:
         # 獲取 AI 模型選擇
-        ai_model = request_data.get("ai_model", "openai")
+        ai_model = (request_data.get("ai_model") or "openai").lower()
+        if ai_model != "openai":
+            raise HTTPException(status_code=400, detail="目前僅支援 OpenAI 模型")
         
-        # 根據模型選擇獲取 API Key（優先使用前端傳入的 key，否則使用預設）
-        if ai_model == "claude":
-            api_key = request_data.get("api_key") or settings.claude_api_key or os.getenv("CLAUDE_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 Claude API Key")
-            service = ClaudeService(api_key)
-        else:
-            api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
-            service = OpenAIService(api_key)
+        api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
+        service = OpenAIService(api_key)
         
         # 獲取 prompt 模板（優先從資料庫讀取）
         db_prompt = db.query(PromptTemplate).filter_by(step_number=2).first()
@@ -362,17 +357,20 @@ async def generate_objectives(
         )
         
         # 調用 API（使用前端選擇的子模型）
-        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o")
         language = request_data.get("language", "zh")
-        print(f"📡 使用子模型: {ai_submodel}")
-        print(f"🌐 輸出語言: {language}")
+        logger.info(f"使用子模型: {ai_submodel}")
+        logger.info(f"輸出語言: {language}")
         objectives = service.generate_content(prompt, model=ai_submodel, language=language)
         
         return {
             "status": "success",
             "objectives": objectives
         }
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"生成失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"生成失敗: {str(e)}")
 
 
@@ -384,19 +382,14 @@ async def generate_strategies(
     """生成教學策略（步驟 3 → 4）"""
     try:
         # 獲取 AI 模型選擇
-        ai_model = request_data.get("ai_model", "openai")
+        ai_model = (request_data.get("ai_model") or "openai").lower()
+        if ai_model != "openai":
+            raise HTTPException(status_code=400, detail="目前僅支援 OpenAI 模型")
         
-        # 根據模型選擇獲取 API Key
-        if ai_model == "claude":
-            api_key = request_data.get("api_key") or settings.claude_api_key or os.getenv("CLAUDE_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 Claude API Key")
-            service = ClaudeService(api_key)
-        else:
-            api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
-            service = OpenAIService(api_key)
+        api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
+        service = OpenAIService(api_key)
         
         # 獲取 prompt 模板（優先從資料庫讀取）
         db_prompt = db.query(PromptTemplate).filter_by(step_number=3).first()
@@ -415,17 +408,20 @@ async def generate_strategies(
         )
         
         # 調用 API（使用前端選擇的子模型）
-        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o")
         language = request_data.get("language", "zh")
-        print(f"📡 使用子模型: {ai_submodel}")
-        print(f"🌐 輸出語言: {language}")
+        logger.info(f"使用子模型: {ai_submodel}")
+        logger.info(f"輸出語言: {language}")
         strategies = service.generate_content(prompt, model=ai_submodel, language=language)
         
         return {
             "status": "success",
             "strategies": strategies
         }
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"生成失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"生成失敗: {str(e)}")
 
 
@@ -437,19 +433,14 @@ async def generate_flow(
     """生成教學流程（步驟 4 → 5）"""
     try:
         # 獲取 AI 模型選擇
-        ai_model = request_data.get("ai_model", "openai")
+        ai_model = (request_data.get("ai_model") or "openai").lower()
+        if ai_model != "openai":
+            raise HTTPException(status_code=400, detail="目前僅支援 OpenAI 模型")
         
-        # 根據模型選擇獲取 API Key
-        if ai_model == "claude":
-            api_key = request_data.get("api_key") or settings.claude_api_key or os.getenv("CLAUDE_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 Claude API Key")
-            service = ClaudeService(api_key)
-        else:
-            api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
-            service = OpenAIService(api_key)
+        api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
+        service = OpenAIService(api_key)
         
         # 獲取 prompt 模板（優先從資料庫讀取）
         db_prompt = db.query(PromptTemplate).filter_by(step_number=4).first()
@@ -468,17 +459,20 @@ async def generate_flow(
         )
         
         # 調用 API（使用前端選擇的子模型）
-        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o")
         language = request_data.get("language", "zh")
-        print(f"📡 使用子模型: {ai_submodel}")
-        print(f"🌐 輸出語言: {language}")
+        logger.info(f"使用子模型: {ai_submodel}")
+        logger.info(f"輸出語言: {language}")
         flow = service.generate_content(prompt, model=ai_submodel, language=language)
         
         return {
             "status": "success",
             "flow": flow
         }
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"生成失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"生成失敗: {str(e)}")
 
 
@@ -490,19 +484,14 @@ async def generate_worksheet(
     """生成學習單（步驟 7）"""
     try:
         # 獲取 AI 模型選擇
-        ai_model = request_data.get("ai_model", "openai")
+        ai_model = (request_data.get("ai_model") or "openai").lower()
+        if ai_model != "openai":
+            raise HTTPException(status_code=400, detail="目前僅支援 OpenAI 模型")
         
-        # 根據模型選擇獲取 API Key
-        if ai_model == "claude":
-            api_key = request_data.get("api_key") or settings.claude_api_key or os.getenv("CLAUDE_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 Claude API Key")
-            service = ClaudeService(api_key)
-        else:
-            api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
-            service = OpenAIService(api_key)
+        api_key = request_data.get("api_key") or settings.openai_api_key or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
+        service = OpenAIService(api_key)
         
         # 獲取 prompt 模板（優先從資料庫讀取）
         db_prompt = db.query(PromptTemplate).filter_by(step_number=6).first()
@@ -521,17 +510,20 @@ async def generate_worksheet(
         )
         
         # 調用 API（使用前端選擇的子模型）
-        ai_submodel = request_data.get("ai_submodel", "gpt-4o" if ai_model == "openai" else "claude-sonnet-4-5-20250929")
+        ai_submodel = request_data.get("ai_submodel", "gpt-4o")
         language = request_data.get("language", "zh")
-        print(f"📡 使用子模型: {ai_submodel}")
-        print(f"🌐 輸出語言: {language}")
+        logger.info(f"使用子模型: {ai_submodel}")
+        logger.info(f"輸出語言: {language}")
         worksheet = service.generate_content(prompt, model=ai_submodel, language=language)
         
         return {
             "status": "success",
             "worksheet": worksheet
         }
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"生成失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"生成失敗: {str(e)}")
 
 
@@ -630,10 +622,10 @@ async def generate_ppt(
 ):
     """生成 PPT（使用 Gamma API）"""
     try:
-        print(f"📊 收到 PPT 生成請求")
+        logger.info("收到 PPT 生成請求")
         
         # 使用 Gamma API Key（從設定或環境變數讀取）
-        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY") or "sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8"
+        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY")
         
         if not gamma_api_key:
             raise HTTPException(status_code=500, detail="未設定 Gamma API Key")
@@ -660,13 +652,13 @@ async def generate_ppt(
             "teaching_flow": request_data.get("teaching_flow", "")
         }
         
-        print(f"📝 準備生成簡報...")
-        print(f"  - 標題: {title}")
-        print(f"  - 語言: {language}")
-        print(f"  - 卡牌數量: {num_cards}")
-        print(f"  - 文字量: {text_amount}")
-        print(f"  - 圖片模型: {image_model}")
-        print(f"  - 圖片風格: {image_style}")
+        logger.info("準備生成簡報...")
+        logger.info(f"  標題: {title}")
+        logger.info(f"  語言: {language}")
+        logger.info(f"  卡牌數量: {num_cards}")
+        logger.info(f"  文字量: {text_amount}")
+        logger.info(f"  圖片模型: {image_model}")
+        logger.info(f"  圖片風格: {image_style}")
         
         # 生成 Gamma 簡報
         result = gamma_service.generate_presentation(
@@ -690,7 +682,7 @@ async def generate_ppt(
         db.add(gamma_gen)
         db.commit()
         
-        print(f"✅ PPT 生成請求已提交")
+        logger.info("PPT 生成請求已提交")
         
         return {
             "status": "success",
@@ -702,7 +694,7 @@ async def generate_ppt(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ PPT 生成失敗: {str(e)}")
+        logger.error(f"PPT 生成失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"生成 PPT 失敗: {str(e)}")
 
 
@@ -714,7 +706,7 @@ async def check_gamma_status(
     """檢查 Gamma 生成狀態"""
     try:
         # 使用 Gamma API Key（從設定或環境變數讀取）
-        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY") or "sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8"
+        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY")
         
         if not gamma_api_key:
             raise HTTPException(status_code=500, detail="未設定 Gamma API Key")
@@ -739,7 +731,7 @@ async def check_gamma_status(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ 查詢 Gamma 狀態失敗: {str(e)}")
+        logger.error(f"查詢 Gamma 狀態失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"查詢狀態失敗: {str(e)}")
 
 
@@ -752,7 +744,7 @@ async def wait_for_gamma_completion(
     """等待 Gamma 生成完成"""
     try:
         # 使用 Gamma API Key（從設定或環境變數讀取）
-        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY") or "sk-gamma-GlUo8DS1fqjaDlakxQuk3NFIkwgKTRYdkAOZTTb0A8"
+        gamma_api_key = settings.gamma_api_key or os.getenv("GAMMA_API_KEY")
         
         if not gamma_api_key:
             raise HTTPException(status_code=500, detail="未設定 Gamma API Key")
@@ -777,51 +769,8 @@ async def wait_for_gamma_completion(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ 等待 Gamma 生成完成失敗: {str(e)}")
+        logger.error(f"等待 Gamma 生成完成失敗: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"等待生成完成失敗: {str(e)}")
-
-
-@router.post("/courses/generate-worksheet")
-async def generate_worksheet(
-    request_data: Dict[str, Any],
-    db: Session = Depends(get_db)
-):
-    """生成學習單（使用 OpenAI API）"""
-    try:
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="未設定 OpenAI API Key")
-        
-        openai_service = OpenAIService(api_key)
-        
-        # 構建學習單 prompt
-        title = request_data.get("title", "學習單")
-        content = f"""
-請為以下課程生成一份學習單：
-
-課程名稱：{title}
-教學目標：{request_data.get('objectives', '')}
-教學內容：{request_data.get('teaching_flow', '')}
-
-請生成包含以下內容的學習單：
-1. 學習任務說明
-2. 思考問題
-3. 實踐活動
-4. 反思總結
-
-請使用結構清晰、學生容易理解的格式。
-"""
-        
-        worksheet_content = openai_service.generate_content(content, model="gpt-5")
-        
-        return {
-            "status": "success",
-            "worksheet": worksheet_content
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"生成學習單失敗: {str(e)}")
-
-
 # ==================== 課程計劃管理 ====================
 
 @router.post("/course-plans/save")

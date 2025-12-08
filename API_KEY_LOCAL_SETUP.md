@@ -5,7 +5,6 @@
 我已經為您建立了 `backend/.env` 檔案，包含必要的 API 金鑰：
 
 - ✅ OpenAI API Key
-- ✅ Claude API Key
 - ✅ 資料庫設定
 
 ## 🎯 現在可以使用了
@@ -13,7 +12,7 @@
 後端服務已經重新啟動並載入了環境變數，您現在可以：
 
 1. **訪問前端**：http://localhost:3000
-2. **選擇 AI 模型**（OpenAI 或 Claude）
+2. **選擇 AI 模型**（OpenAI）
 3. **開始使用**
 
 ## 🔍 驗證設定
@@ -51,8 +50,8 @@ cd backend && source venv/bin/activate && uvicorn main:app --reload
 檔案位置：`backend/.env`
 
 ```
-OPENAI_API_KEY=your_key_here
-CLAUDE_API_KEY=your_key_here
+OPENAI_API_KEY=your_openai_key
+GAMMA_API_KEY=your_gamma_key
 DATABASE_URL=sqlite:///./course_planner.db
 ENVIRONMENT=development
 DEBUG=true
@@ -68,7 +67,6 @@ DEBUG=true
 
 現在您的本地環境已經完全配置好了，可以正常使用所有功能：
 
-- ✅ Claude 整合
 - ✅ 檔案上傳功能
 - ✅ AI 生成功能
 - ✅ Prompt 編輯器

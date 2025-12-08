@@ -24,21 +24,7 @@
 - ✅ 完整的錯誤處理
 - ✅ 詳細的診斷日誌
 
-### 2. Claude 內容長度修正
-
-#### 問題
-
-- 原本 max_tokens: 4096 (約 3000-4000 字)
-- 導致內容被截斷
-
-#### 修正
-
-- ✅ 增加 max_tokens: 4096 → 8192 (約 6000-8000 字)
-- ✅ 改進系統提示
-- ✅ 添加內容長度追蹤
-- ✅ 前端和後端日誌
-
-### 3. UI/UX 改進
+### 2. UI/UX 改進
 
 - ✅ Gamma 設定面板改為黑色文字
 - ✅ 提示區塊改為淺藍色背景
@@ -50,7 +36,6 @@
 ### 後端
 
 - `backend/app/services/gamma_service.py`
-- `backend/app/services/claude_service.py`
 - `backend/app/api/routes.py`
 - `backend/app/config.py`
 
@@ -63,7 +48,6 @@
 ### 文檔
 
 - `GAMMA_SETTINGS_FEATURE.md`
-- `CLAUDE_CONTENT_LENGTH_FIX.md`
 - `GAMMA_API_UPDATE.md`
 - `GAMMA_CONTENT_OPTIMIZATION.md`
 - 以及其他相關文檔
